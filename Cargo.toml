@@ -4,6 +4,6 @@ version = "0.0.0"
 edition = "2024"
 
 [dependencies]
-async-executor = "1.13.1"
+async-executor = {  version = "1.13.1", features = ["static"] }
 async-net = "2.0.0"
 voxidian-protocol = { path = "../protocol" }
