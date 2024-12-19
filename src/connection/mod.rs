@@ -1,17 +1,21 @@
+use std::io::{Error, Read};
+use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{channel, Receiver, Sender};
-use voxidian_protocol::packet::{EncodeError, PacketBuf, PacketEncode};
+use voxidian_protocol::packet::{DecodeError, EncodeError, PacketBuf, PacketEncode};
 
 pub struct Connection {
-    packet_sender: Sender<PacketBuf>
+    packet_sender: Sender<PacketBuf>,
+    stream: TcpStream,
 }
 
 impl Connection {
-    pub fn new() -> (ConnectionHandle, Receiver<PacketBuf>) {
+    pub fn new(stream: TcpStream) -> (ConnectionHandle, Receiver<PacketBuf>) {
         let (sender, recv) = channel();
         (ConnectionHandle {
             inner: Arc::new(Mutex::new(Connection {
-                packet_sender: sender.clone()
+                packet_sender: sender.clone(),
+                stream
             })),
             packet_sender: sender
         }, recv)
