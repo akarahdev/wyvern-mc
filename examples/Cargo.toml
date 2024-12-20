@@ -1,0 +1,10 @@
+[package]
+name = "wyvern-example"
+version = "0.0.0"
+
+[dev-dependencies]
+wyvern-mc = { path = "../wyvern-mc" }
+
+[[example]]
+name = "simple"
+path = "./simple.rs"

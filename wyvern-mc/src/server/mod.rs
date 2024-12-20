@@ -1,8 +1,7 @@
-pub mod net;
-
-use std::sync::LazyLock;
+use std::io::ErrorKind;
+use std::net::{TcpListener, ToSocketAddrs};
 use voxidian_protocol::packet::PacketBuf;
-use crate::ConnectionHandle;
+use crate::{Connection, ConnectionHandle};
 
 pub struct Server {
     connections: Vec<ConnectionHandle>,
@@ -10,11 +9,27 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn spawn(address: String) {
-        let server = Server {
+    pub fn new() -> Server {
+        Server {
             connections: Vec::new(),
             events: Vec::new()
-        };
-        server.start();
+        }
+    }
+
+    pub fn start<S: ToSocketAddrs>(mut self, address: S) {
+        let listener = TcpListener::bind(address).unwrap();
+        listener.set_nonblocking(true);
+        loop {
+            match listener.accept() {
+                Ok(conn) => {
+                    self.connections.push(Connection::new(conn.0));
+                }
+                Err(e) if e.kind() == ErrorKind::WouldBlock => {}
+                Err(e) => panic!("{:?}", e)
+            }
+            for connection in &self.connections {
+                connection.handle_incoming_data();
+            }
+        }
     }
 }

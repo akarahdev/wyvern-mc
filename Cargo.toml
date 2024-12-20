@@ -1,4 +1,6 @@
 [workspace]
 members = [
-    "wyvern-mc"
+    "wyvern-mc",
+    "examples"
 ]
+resolver = "2"
