@@ -27,7 +27,8 @@ impl Server {
                 Err(e) if e.kind() == ErrorKind::WouldBlock => {}
                 Err(e) => panic!("{:?}", e)
             }
-            for connection in &self.connections {
+            self.connections.retain(|x| !x.marked_for_removal());
+            for connection in &mut self.connections {
                 connection.handle_incoming_data();
             }
         }
