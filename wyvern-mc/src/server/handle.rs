@@ -1,4 +1,5 @@
-use crate::{Connection, Server};
+use crate::server::{ConfigEvent, HandshakeEvent, LoginEvent, StatusEvent};
+use crate::{Connection, Plugin, Server};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
@@ -9,6 +10,39 @@ pub struct ServerHandle {
 }
 
 impl ServerHandle {
+    pub fn add_plugin<P: Plugin>(self, plugin: P) -> Self {
+        plugin.load(self.clone());
+        self
+    }
+
+    pub fn handshake_event(self, event: HandshakeEvent) -> Self {
+        self.inner.lock().unwrap().handshake_events.push(event);
+        self
+    }
+
+    pub fn handshake_events(&self) -> Vec<HandshakeEvent> {
+        self.inner.lock().unwrap().handshake_events.clone()
+    }
+
+    pub fn status_event(self, event: StatusEvent) -> Self {
+        self.inner.lock().unwrap().status_events.push(event);
+        self
+    }
+
+    pub fn status_events(&self) -> Vec<StatusEvent> {
+        self.inner.lock().unwrap().status_events.clone()
+    }
+
+    pub fn login_event(self, event: LoginEvent) -> Self {
+        self.inner.lock().unwrap().login_events.push(event);
+        self
+    }
+
+    pub fn configuration_event(self, event: ConfigEvent) -> Self {
+        self.inner.lock().unwrap().config_events.push(event);
+        self
+    }
+
     pub fn start<S: ToSocketAddrs>(self, address: S) {
         let listener = TcpListener::bind(address).unwrap();
         listener

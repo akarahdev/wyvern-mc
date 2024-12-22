@@ -2,9 +2,6 @@ use crate::ConnectionHandle;
 use std::fmt::Debug;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
-use voxidian_protocol::packet::s2c::status::{
-    StatusResponse, StatusResponsePlayers, StatusResponseVersion,
-};
 use voxidian_protocol::packet::{DecodeError, PrefixedPacketDecode, Stage};
 
 impl ConnectionHandle {
@@ -25,46 +22,19 @@ impl ConnectionHandle {
             Stage::Handshake => {
                 self.parse_packets(
                     |packet: C2SHandshakePackets, connection_handle: ConnectionHandle| {
-                        let C2SHandshakePackets::Intention(packet) = packet;
-                        let stage = packet.intended_stage.into_stage();
-                        println!("new stage: {:?}", stage);
-                        match stage {
-                            Stage::Status => {
-                                connection_handle.set_stage(Stage::Status);
-                                println!("Connection is now status phase");
-                            }
-                            stage => connection_handle.set_stage(stage),
-                        };
+                        for event in self.server.handshake_events() {
+                            event(&packet, connection_handle.clone())
+                        }
                     },
                 );
             }
             Stage::Status => {
                 self.parse_packets(
-                    |packet: C2SStatusPackets, connection_handle: ConnectionHandle| match packet {
-                        C2SStatusPackets::PingRequest(packet) => {}
-                        C2SStatusPackets::StatusRequest(packet) => {
-                            connection_handle
-                                .send_packet(
-                                    StatusResponse {
-                                        version: StatusResponseVersion {
-                                            name: "1.21.1".to_string(),
-                                            protocol: 767,
-                                        },
-                                        players: StatusResponsePlayers {
-                                            online: 0,
-                                            max: 0,
-                                            sample: vec![],
-                                        },
-                                        desc: Default::default(),
-                                        favicon_png_b64: "".to_string(),
-                                        enforce_chat_reports: false,
-                                        prevent_chat_reports: false,
-                                    }
-                                    .to_packet(),
-                                )
-                                .unwrap();
+                    |packet: C2SStatusPackets, connection_handle: ConnectionHandle| {
+                        for event in self.server.status_events() {
+                            event(&packet, connection_handle.clone());
                         }
-                    },
+                    }
                 );
             }
             _ => {}

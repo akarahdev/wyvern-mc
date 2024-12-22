@@ -1,7 +1,7 @@
 pub mod login;
 
-use crate::Server;
+use crate::{Server, ServerHandle};
 
 pub trait Plugin {
-    fn load(&self, server: &mut Server);
+    fn load(&self, server: ServerHandle);
 }
