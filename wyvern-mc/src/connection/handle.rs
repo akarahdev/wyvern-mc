@@ -1,7 +1,7 @@
-use std::sync::{Arc, Mutex};
-use std::sync::mpsc::Sender;
-use voxidian_protocol::packet::{EncodeError, PacketBuf, PacketEncode, Stage};
 use crate::{Connection, ServerHandle};
+use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
+use voxidian_protocol::packet::{EncodeError, PacketBuf, PacketEncode, Stage};
 
 #[derive(Clone)]
 pub struct ConnectionHandle {

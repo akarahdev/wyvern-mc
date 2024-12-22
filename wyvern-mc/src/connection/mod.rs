@@ -3,19 +3,14 @@ mod net;
 
 pub use handle::*;
 
-use std::collections::VecDeque;
-use std::fmt::Debug;
-use std::io::{BufRead, BufReader, Error, ErrorKind, Read};
-use std::net::TcpStream;
-use std::ops::DerefMut;
-use std::sync::{Arc, Mutex};
-use std::sync::mpsc::{channel, Receiver, Sender};
-use voxidian_protocol::packet::{DecodeError, EncodeError, PacketBuf, PacketEncode, PrefixedPacketDecode, Stage};
-use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
-use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
-use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
-use voxidian_protocol::packet::s2c::status::{StatusResponse, StatusResponsePlayers, StatusResponseS2CStatusPacket, StatusResponseVersion};
 use crate::ServerHandle;
+use std::collections::VecDeque;
+use std::io::{BufRead, BufReader, ErrorKind};
+use std::net::TcpStream;
+use std::sync::mpsc::{Receiver, Sender, channel};
+use std::sync::{Arc, Mutex};
+use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
+use voxidian_protocol::packet::{PacketBuf, Stage};
 
 pub struct Connection {
     packet_sender: Sender<PacketBuf>,
@@ -44,7 +39,7 @@ impl Connection {
                 mark_for_removal: false,
             })),
             packet_sender: sender,
-            server: handle
+            server: handle,
         }
     }
 
@@ -53,15 +48,18 @@ impl Connection {
         match buf.fill_buf() {
             Ok(bytes) => {
                 for byte in bytes {
-                    let byte = self.packet_processing.secret_cipher.decrypt_u8(*byte).unwrap();
+                    let byte = self
+                        .packet_processing
+                        .secret_cipher
+                        .decrypt_u8(*byte)
+                        .unwrap();
                     self.incoming_bytes.push_back(byte);
                 }
             }
             Err(err) => match err.kind() {
                 ErrorKind::WouldBlock => {}
-                _ => panic!("{:?}", err)
-            }
+                _ => panic!("{:?}", err),
+            },
         }
     }
 }
-
