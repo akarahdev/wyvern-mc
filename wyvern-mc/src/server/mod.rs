@@ -2,6 +2,7 @@ use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use voxidian_protocol::packet::PacketBuf;
 use crate::{Connection, ConnectionHandle};
+use crate::plugin::Plugin;
 
 pub struct Server {
     connections: Vec<ConnectionHandle>,
@@ -14,6 +15,11 @@ impl Server {
             connections: Vec::new(),
             events: Vec::new()
         }
+    }
+
+    pub fn add_plugin<P: Plugin>(mut self, plugin: P) -> Self {
+        plugin.load(&mut self);
+        self
     }
 
     pub fn start<S: ToSocketAddrs>(mut self, address: S) {

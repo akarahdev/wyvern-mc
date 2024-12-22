@@ -103,7 +103,7 @@ impl ConnectionHandle {
                         Stage::Status => {
                             connection_handle.set_stage(Stage::Status);
                             println!("Connection is now status phase");
-                            
+
                         }
                         stage => connection_handle.set_stage(stage)
                     };
