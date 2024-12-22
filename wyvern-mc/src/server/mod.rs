@@ -1,5 +1,9 @@
+mod handle;
+pub use handle::*;
+
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
+use std::sync::{Arc, Mutex};
 use voxidian_protocol::packet::PacketBuf;
 use crate::{Connection, ConnectionHandle};
 use crate::plugin::Plugin;
@@ -23,20 +27,9 @@ impl Server {
     }
 
     pub fn start<S: ToSocketAddrs>(mut self, address: S) {
-        let listener = TcpListener::bind(address).unwrap();
-        listener.set_nonblocking(true);
-        loop {
-            match listener.accept() {
-                Ok(conn) => {
-                    self.connections.push(Connection::new(conn.0));
-                }
-                Err(e) if e.kind() == ErrorKind::WouldBlock => {}
-                Err(e) => panic!("{:?}", e)
-            }
-            self.connections.retain(|x| !x.marked_for_removal());
-            for connection in &mut self.connections {
-                connection.handle_incoming_data();
-            }
-        }
+        let handle = ServerHandle {
+            inner: Arc::new(Mutex::new(self))
+        };
+        handle.start(address);
     }
 }

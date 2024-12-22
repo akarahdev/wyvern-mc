@@ -5,6 +5,6 @@ pub struct LoginProtocol;
 
 impl Plugin for LoginProtocol {
     fn load(&self, server: &mut Server) {
-        todo!()
+
     }
 }
