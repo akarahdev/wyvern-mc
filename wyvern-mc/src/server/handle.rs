@@ -38,9 +38,17 @@ impl ServerHandle {
         self
     }
 
+    pub fn login_events(&self) -> Vec<LoginEvent> {
+        self.inner.lock().unwrap().login_events.clone()
+    }
+
     pub fn configuration_event(self, event: ConfigEvent) -> Self {
         self.inner.lock().unwrap().config_events.push(event);
         self
+    }
+
+    pub fn configuration_events(&self) -> Vec<ConfigEvent> {
+        self.inner.lock().unwrap().config_events.clone()
     }
 
     pub fn start<S: ToSocketAddrs>(self, address: S) {
@@ -51,6 +59,7 @@ impl ServerHandle {
         loop {
             match listener.accept() {
                 Ok(conn) => {
+                    conn.0.set_nonblocking(true).unwrap();
                     self.inner
                         .lock()
                         .unwrap()

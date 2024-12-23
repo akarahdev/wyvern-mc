@@ -5,9 +5,9 @@ pub use handle::*;
 
 use crate::ServerHandle;
 use std::collections::VecDeque;
-use std::io::{BufRead, BufReader, ErrorKind};
+use std::io::{BufRead, ErrorKind, Read, Write};
 use std::net::TcpStream;
-use std::sync::mpsc::{Receiver, Sender, channel};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
 use voxidian_protocol::packet::{PacketBuf, Stage};
@@ -44,22 +44,42 @@ impl Connection {
     }
 
     pub(crate) fn handle_incoming_data(&mut self) {
-        let mut buf = BufReader::new(&mut self.stream);
-        match buf.fill_buf() {
+        let mut buf = [0u8; 100];
+
+        match self.stream.read(&mut buf) {
             Ok(bytes) => {
-                for byte in bytes {
+                for byte in buf {
                     let byte = self
                         .packet_processing
                         .secret_cipher
-                        .decrypt_u8(*byte)
+                        .decrypt_u8(byte)
                         .unwrap();
                     self.incoming_bytes.push_back(byte);
                 }
             }
             Err(err) => match err.kind() {
                 ErrorKind::WouldBlock => {}
+                ErrorKind::Interrupted => {}
                 _ => panic!("{:?}", err),
             },
+        }
+    }
+
+    pub(crate) fn handle_outgoing_data(&mut self) {
+        loop {
+            let Ok(buf) = self.packet_receiver.try_recv() else {
+                return;
+            };
+            match self.stream.write_all(buf.as_slice()) {
+                Ok(()) => {
+                    println!("OUT: {:?}", buf);
+                    return;
+                }
+                Err(e) => {
+                    self.packet_sender.send(buf).unwrap();
+                    return;
+                }
+            }
         }
     }
 }
