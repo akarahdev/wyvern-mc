@@ -19,7 +19,7 @@ impl ConnectionHandle {
 
     pub(crate) fn handle_incoming_data(&self) {
         self.inner.lock().unwrap().handle_incoming_data();
-        let stage = self.get_stage().clone();
+        let stage = self.get_stage();
 
         match stage {
             Stage::Handshake => {
@@ -70,26 +70,34 @@ impl ConnectionHandle {
     ) {
         let mut inner = self.inner.lock().unwrap();
         let handle = self.clone();
-        // TODO: remove this clone PLEASE this will kill performance if you don't oh my god
-        let b = inner.incoming_bytes.clone();
-        let a = b.iter().map(|x| *x).clone();
-        match inner.packet_processing.decode_from_raw_queue(a) {
+
+        if inner.incoming_bytes.len() > 0 {
+            println!("len: {:?}", inner.incoming_bytes.len());
+        }
+        let bytes = inner
+            .incoming_bytes
+            .iter()
+            .map(|x| *x)
+            .collect::<Vec<_>>();
+
+        match inner.packet_processing.decode_from_raw_queue(bytes.into_iter()) {
             Ok((mut buf, consumed)) => {
-                if buf.iter().count() == 0 {
+                if consumed == 0 {
                     return;
                 }
+                println!("slen: {:?}", inner.incoming_bytes.len());
+                println!("consumed: {:?}", consumed);
                 for _ in 0..consumed {
                     inner.incoming_bytes.pop_front();
                 }
+                println!("olen: {:?}", inner.incoming_bytes.len());
                 println!("IN: {:?}", buf);
                 match T::decode_prefixed(&mut buf) {
                     Ok(packet) => {
                         drop(inner);
                         f(packet, handle)
                     }
-                    Err(DecodeError::EndOfBuffer) => {
-                        return;
-                    }
+                    Err(DecodeError::EndOfBuffer) => {}
                     Err(e) => {
                         panic!("{:?}", e);
                     }

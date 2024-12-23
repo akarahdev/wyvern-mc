@@ -1345,7 +1345,6 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "voxidian-protocol"
 version = "0.1.0"
-source = "git+https://github.com/LighthouseMC/VoxidianProtocol.git#a758cd2bc723b98204e45cf9006fbd54d62ccef5"
 dependencies = [
  "cesu8",
  "flate2",
@@ -1361,7 +1360,6 @@ dependencies = [
 [[package]]
 name = "voxidian-protocol-macros"
 version = "0.1.0"
-source = "git+https://github.com/LighthouseMC/VoxidianProtocol.git#a758cd2bc723b98204e45cf9006fbd54d62ccef5"
 dependencies = [
  "proc-macro2",
  "quote",

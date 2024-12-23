@@ -4,4 +4,4 @@ version = "0.0.0"
 edition = "2024"
 
 [dependencies]
-voxidian-protocol = { git = "https://github.com/LighthouseMC/VoxidianProtocol.git" }
+voxidian-protocol = { path = "../../voxidian/protocol" }

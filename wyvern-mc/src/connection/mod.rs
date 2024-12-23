@@ -44,15 +44,15 @@ impl Connection {
     }
 
     pub(crate) fn handle_incoming_data(&mut self) {
-        let mut buf = [0u8; 100];
+        let mut buf = [0u8; 256];
 
         match self.stream.read(&mut buf) {
             Ok(bytes) => {
-                for byte in buf {
+                for idx in 0..bytes {
                     let byte = self
                         .packet_processing
                         .secret_cipher
-                        .decrypt_u8(byte)
+                        .decrypt_u8(buf[idx])
                         .unwrap();
                     self.incoming_bytes.push_back(byte);
                 }
@@ -72,7 +72,6 @@ impl Connection {
             };
             match self.stream.write_all(buf.as_slice()) {
                 Ok(()) => {
-                    println!("OUT: {:?}", buf);
                     return;
                 }
                 Err(e) => {
