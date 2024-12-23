@@ -97,7 +97,6 @@ impl ConnectionHandle {
             }
             Err(DecodeError::EndOfBuffer) => {
                 drop(inner);
-                self.mark_for_removal();
                 return;
             }
             Err(e) => {

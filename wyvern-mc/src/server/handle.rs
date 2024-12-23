@@ -59,12 +59,14 @@ impl ServerHandle {
         loop {
             match listener.accept() {
                 Ok(conn) => {
+                    println!("accepted {:?}", conn.1);
                     conn.0.set_nonblocking(true).unwrap();
                     self.inner
                         .lock()
                         .unwrap()
                         .connections
                         .push(Connection::new(conn.0, self.clone()));
+                    println!("connections: {:?}", self.inner.lock().unwrap().connections.len());
                 }
                 Err(e) if e.kind() == ErrorKind::WouldBlock => {}
                 Err(e) => panic!("{:?}", e),
