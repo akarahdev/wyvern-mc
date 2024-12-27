@@ -1,12 +1,14 @@
 use crate::plugin::Plugin;
 use crate::ServerHandle;
+use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
+use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, SelectKnownPacksS2CConfigPacket};
 use voxidian_protocol::packet::s2c::login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty};
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
-use voxidian_protocol::value::{LengthPrefixHashMap, TextComponent, VarInt};
+use voxidian_protocol::value::{ConsumeAllVec, Identifier, LengthPrefixHashMap, LengthPrefixVec, TextComponent, VarInt};
 
 pub struct LoginProtocol;
 
@@ -76,6 +78,34 @@ impl Plugin for LoginProtocol {
                 return;
             };
             connection.set_stage(Stage::Config);
+
+            let mut data = ConsumeAllVec::new();
+            data.extend("Wyvern-MC".bytes());
+            connection.send_packet(CustomPayloadS2CConfigPacket {
+                channel: Identifier::new("minecraft", "branc"),
+                data,
+            }).unwrap();
+            connection.send_packet(SelectKnownPacksS2CConfigPacket {
+                known_packs: LengthPrefixVec::new(),
+            }).unwrap();
+        }).configuration_event(|packet, connection| {
+            println!("config packet: {:?}", packet);
+        }).configuration_event(|packet, connection| {
+            let C2SConfigPackets::ClientInformation(packet) = packet else {
+                return;
+            };
+        }).configuration_event(|packet, connection| {
+            let C2SConfigPackets::SelectKnownPacks(packet) = packet else {
+                return;
+            };
+
+            connection.send_packet(FinishConfigurationS2CConfigPacket).unwrap();
+        }).configuration_event(|packet, connection| {
+            let C2SConfigPackets::FinishConfiguration(packet) = packet else {
+                return;
+            };
+
+            connection.set_stage(Stage::Play);
         });
     }
 }
