@@ -1,15 +1,18 @@
+use std::vec;
+
 use crate::plugin::Plugin;
-use crate::ServerHandle;
+use crate::{ClientRegistryCache, ServerHandle};
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
-use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, SelectKnownPacksS2CConfigPacket};
+use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, RegistryDataS2CConfigPacket, SelectKnownPacksS2CConfigPacket};
 use voxidian_protocol::packet::s2c::login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty};
-use voxidian_protocol::packet::s2c::play::{PlayerPositionS2CPlayPacket, TeleportFlags};
+use voxidian_protocol::packet::s2c::play::{GameEvent, GameEventS2CPlayPacket, Gamemode, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, TeleportFlags};
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
-use voxidian_protocol::value::{ConsumeAllVec, Identifier, LengthPrefixHashMap, LengthPrefixVec, TextComponent, VarInt};
+use voxidian_protocol::registry::{RegEntry, Registry};
+use voxidian_protocol::value::{ConsumeAllVec, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
 
 pub struct LoginProtocol;
 
@@ -112,13 +115,107 @@ impl Plugin for LoginProtocol {
                 return;
             };
 
+            let mut dim_type_registry = Registry::new();
+            dim_type_registry.insert(
+                Identifier::new("minecraft", "oveworld"), 
+                DimType {
+                    fixed_time: None,
+                    has_skylight: true,
+                    has_ceiling: false,
+                    ultrawarm: false,
+                    natural: true,
+                    coordinate_scale: 1.0,
+                    bed_works: true,
+                    respawn_anchor_works: false,
+                    min_y: 0,
+                    max_y: 128,
+                    logical_height: 128,
+                    height: 128,
+                    infiniburn: "#minecraft:infiniburn_overworld".to_string(),
+                    effects: DimEffects::Nether,
+                    ambient_light: 15.0,
+                    piglin_safe: false,
+                    has_raids: true,
+                    monster_spawn_light_level: DimMonsterSpawnLightLevel::Constant(1),
+                    monster_spawn_block_light_limit: 1,
+                }
+            );
+
+            let mut wolf_variant = Registry::new();
+            wolf_variant.insert(
+                Identifier::new("minecraft", "pale"), 
+                WolfVariant {
+                    wild_tex: Identifier::new("minecraft", "wild_tex"),
+                    tame_tex: Identifier::new("minecraft", "tame_tex"),
+                    angry_tex: Identifier::new("minecraft", "angry_tex"),
+                    biomes: vec![]
+                }
+            );
+
+            let mut painting_variant = Registry::new();
+            painting_variant.insert(
+                Identifier::new("minecraft", "empty_painting"), 
+                PaintingVariant {
+                    asset: Identifier::new("minecraft", "empty_painting"),
+                    width: 1,
+                    height: 1,
+                    title: TextComponent::of_literal("Empty Painting"),
+                    author: TextComponent::of_literal("Endistic")
+                }
+            );
+
+            connection.send_packet(dim_type_registry.to_registry_data_packet()).unwrap();
+            connection.send_packet(wolf_variant.to_registry_data_packet()).unwrap();
+            connection.send_packet(painting_variant.to_registry_data_packet()).unwrap();
+            
+            connection.send_packet(RegistryDataS2CConfigPacket {
+                registry: Identifier::new("minecraft", "wolf_variant"),
+                entries: LengthPrefixHashMap::new()
+            }).unwrap();
+            connection.send_packet(RegistryDataS2CConfigPacket {
+                registry: Identifier::new("minecraft", "painting_variant"),
+                entries: LengthPrefixHashMap::new()
+            }).unwrap();
+
             connection.send_packet(FinishConfigurationS2CConfigPacket).unwrap();
         }).configuration_event(|packet, connection| {
             let C2SConfigPackets::FinishConfiguration(_packet) = packet else {
                 return;
             };
 
+            
+
             connection.set_stage(Stage::Play);
+
+            let mut dims = LengthPrefixVec::new();
+            dims.push(Identifier::new("minecraft", "overworld"));
+            connection.send_packet(LoginS2CPlayPacket {
+                entity: 1,
+                hardcore: false,
+                dims,
+                max_players: VarInt::from(0),
+                view_dist: VarInt::from(8),
+                sim_dist: VarInt::from(8),
+                reduced_debug: false,
+                respawn_screen: false,
+                limited_crafting: false,
+                dim: unsafe { RegEntry::new_unchecked(0) },
+                dim_name: Identifier::new("minecraft", "overworld"),
+                seed: 0,
+                gamemode: Gamemode::Adventure,
+                old_gamemode: Gamemode::None,
+                is_debug: false,
+                is_flat: false,
+                death_loc: None,
+                portal_cooldown: VarInt::from(0),
+                sea_level: VarInt::from(64),
+                enforce_chat_reports: false,
+            }).unwrap();
+
+            connection.send_packet(GameEventS2CPlayPacket {
+                event: GameEvent::WaitForChunks,
+                value: 0.0,
+            }).unwrap();
 
             connection.send_packet(PlayerPositionS2CPlayPacket {
                 teleport_id: VarInt::from(1),
