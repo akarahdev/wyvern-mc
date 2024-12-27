@@ -5,7 +5,7 @@ pub use handle::*;
 
 use crate::ServerHandle;
 use std::collections::VecDeque;
-use std::io::{BufRead, ErrorKind, Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::net::TcpStream;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};

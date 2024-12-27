@@ -16,7 +16,6 @@ impl ConnectionHandle {
         *&inner.mark_for_removal
     }
 
-
     pub(crate) fn handle_incoming_data(&self) {
         self.inner.lock().unwrap().handle_incoming_data();
         let stage = self.get_stage();

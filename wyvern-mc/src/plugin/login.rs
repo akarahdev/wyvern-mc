@@ -4,8 +4,9 @@ use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
-use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, SelectKnownPacksS2CConfigPacket};
+use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, SelectKnownPacksS2CConfigPacket};
 use voxidian_protocol::packet::s2c::login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty};
+use voxidian_protocol::packet::s2c::play::{PlayerPositionS2CPlayPacket, TeleportFlags};
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
 use voxidian_protocol::value::{ConsumeAllVec, Identifier, LengthPrefixHashMap, LengthPrefixVec, TextComponent, VarInt};
@@ -85,8 +86,20 @@ impl Plugin for LoginProtocol {
                 channel: Identifier::new("minecraft", "branc"),
                 data,
             }).unwrap();
+
+            let mut known_packs = LengthPrefixVec::new();
+            known_packs.push(KnownPack {
+                namespace: "minecraft".to_string(),
+                id: "core".to_string(),
+                version: "1.21.4".to_string(),
+            });
+            known_packs.push(KnownPack {
+                namespace: "minecraft".to_string(),
+                id: "vanilla".to_string(),
+                version: "1.21.4".to_string(),
+            });
             connection.send_packet(SelectKnownPacksS2CConfigPacket {
-                known_packs: LengthPrefixVec::new(),
+                known_packs: known_packs,
             }).unwrap();
         }).configuration_event(|packet, connection| {
             println!("config packet: {:?}", packet);
@@ -106,6 +119,29 @@ impl Plugin for LoginProtocol {
             };
 
             connection.set_stage(Stage::Play);
+
+            connection.send_packet(PlayerPositionS2CPlayPacket {
+                teleport_id: VarInt::from(1),
+                x: 0.0,
+                y: 64.0,
+                z: 0.0,
+                vx: 0.0,
+                vy: 0.0,
+                vz: 0.0,
+                adyaw_deg: 0.0,
+                adpitch_deg: 0.0,
+                flags: TeleportFlags {
+                    relative_x: false,
+                    relative_y: false,
+                    relative_z: false,
+                    relative_pitch: false,
+                    relative_yaw: false,
+                    relative_vx: false,
+                    relative_vy: false,
+                    relative_vz: false,
+                    rotate_velocity: false
+                }
+            }).unwrap();
         });
     }
 }

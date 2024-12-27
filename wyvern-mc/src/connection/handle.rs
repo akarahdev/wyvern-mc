@@ -18,7 +18,7 @@ impl ConnectionHandle {
         let mut tmp_buf = PacketBuf::new();
         packet.encode_prefixed(&mut tmp_buf)?;
         let mut buf = PacketBuf::new();
-        VarInt::from(tmp_buf.iter().count()).encode(&mut buf);
+        VarInt::from(tmp_buf.iter().count()).encode(&mut buf)?;
         buf.write_u8s(tmp_buf.as_slice());
         let _ = self.packet_sender.send(buf);
         Ok(())
