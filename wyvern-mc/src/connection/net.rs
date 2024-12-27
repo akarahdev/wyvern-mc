@@ -7,6 +7,7 @@ use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
 use voxidian_protocol::packet::{DecodeError, PrefixedPacketDecode, Stage};
 
 impl ConnectionHandle {
+    #[allow(unused)]
     pub(crate) fn mark_for_removal(&self) {
         self.inner.lock().unwrap().mark_for_removal = true;
     }

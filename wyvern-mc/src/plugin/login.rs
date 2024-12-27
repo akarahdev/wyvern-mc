@@ -33,7 +33,7 @@ impl Plugin for LoginProtocol {
                         timestamp: packet.timestamp,
                     }).unwrap();
                 }
-                C2SStatusPackets::StatusRequest(packet) => {
+                C2SStatusPackets::StatusRequest(_packet) => {
                     connection.send_packet(
                         StatusResponse {
                             version: StatusResponseVersion {
@@ -75,7 +75,7 @@ impl Plugin for LoginProtocol {
                 props,
             }).unwrap();
         }).login_event(|packet, connection| {
-            let C2SLoginPackets::LoginAcknowledged(packet) = packet else {
+            let C2SLoginPackets::LoginAcknowledged(_packet) = packet else {
                 return;
             };
             connection.set_stage(Stage::Config);
@@ -101,20 +101,20 @@ impl Plugin for LoginProtocol {
             connection.send_packet(SelectKnownPacksS2CConfigPacket {
                 known_packs: known_packs,
             }).unwrap();
-        }).configuration_event(|packet, connection| {
+        }).configuration_event(|packet, _connection| {
             println!("config packet: {:?}", packet);
-        }).configuration_event(|packet, connection| {
-            let C2SConfigPackets::ClientInformation(packet) = packet else {
+        }).configuration_event(|packet, _connection| {
+            let C2SConfigPackets::ClientInformation(_packet) = packet else {
                 return;
             };
         }).configuration_event(|packet, connection| {
-            let C2SConfigPackets::SelectKnownPacks(packet) = packet else {
+            let C2SConfigPackets::SelectKnownPacks(_packet) = packet else {
                 return;
             };
 
             connection.send_packet(FinishConfigurationS2CConfigPacket).unwrap();
         }).configuration_event(|packet, connection| {
-            let C2SConfigPackets::FinishConfiguration(packet) = packet else {
+            let C2SConfigPackets::FinishConfiguration(_packet) = packet else {
                 return;
             };
 

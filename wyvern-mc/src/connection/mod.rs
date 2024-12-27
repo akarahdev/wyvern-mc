@@ -74,7 +74,7 @@ impl Connection {
                 Ok(()) => {
                     return;
                 }
-                Err(e) => {
+                Err(_e) => {
                     self.packet_sender.send(buf).unwrap();
                     return;
                 }
