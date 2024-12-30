@@ -1,20 +1,19 @@
 use std::vec;
 
 use crate::plugin::Plugin;
-use crate::{ClientRegistryCache, ServerHandle};
-use voxidian_protocol::mojang::auth_verify::MojAuth;
+use crate::ServerHandle;
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
 use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
-use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, RegistryDataS2CConfigPacket, SelectKnownPacksS2CConfigPacket};
+use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, SelectKnownPacksS2CConfigPacket};
 use voxidian_protocol::packet::s2c::login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty};
-use voxidian_protocol::packet::s2c::play::{BlockUpdateS2CPlayPacket, ChunkBatchFinishedS2CPlayPacket, ChunkBatchStartS2CPlayPacket, GameEvent, GameEventS2CPlayPacket, Gamemode, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, S2CPlayPackets, SetChunkCacheCentreS2CPlayPacket, TeleportFlags};
+use voxidian_protocol::packet::s2c::play::{BlockUpdateS2CPlayPacket, GameEvent, GameEventS2CPlayPacket, Gamemode, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, S2CPlayPackets, SetChunkCacheCentreS2CPlayPacket, TeleportFlags};
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
 use voxidian_protocol::registry::{RegEntry, Registry};
-use voxidian_protocol::value::{Biome, BlockPos, BlockState, ConsumeAllVec, DamageDifficultyScaling, DamageType, DeathMessageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
+use voxidian_protocol::value::{Biome, BlockPos, BlockState, ConsumeAllVec, DamageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
 
 pub struct LoginProtocol;
 
