@@ -7,7 +7,7 @@ use crate::ServerHandle;
 use std::collections::VecDeque;
 use std::io::{ErrorKind, Read, Write};
 use std::net::TcpStream;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
 use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
 use voxidian_protocol::packet::{PacketBuf, Stage};

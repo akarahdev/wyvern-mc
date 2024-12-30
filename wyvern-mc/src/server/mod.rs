@@ -7,7 +7,6 @@ pub use protocol::*;
 use crate::ConnectionHandle;
 use std::sync::{Arc, Mutex};
 
-
 #[derive(Default)]
 pub struct Server {
     connections: Vec<ConnectionHandle>,
@@ -16,14 +15,14 @@ pub struct Server {
     status_events: Vec<StatusEvent>,
     login_events: Vec<LoginEvent>,
     config_events: Vec<ConfigEvent>,
-    play_events: Vec<PlayEvent>
+    play_events: Vec<PlayEvent>,
 }
 
 impl Server {
     #[allow(clippy::new_ret_no_self)]
     pub fn new() -> ServerHandle {
         ServerHandle {
-            inner: Arc::new(Mutex::new(Server::default()))
+            inner: Arc::new(Mutex::new(Server::default())),
         }
     }
 }

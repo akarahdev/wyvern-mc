@@ -39,7 +39,7 @@ impl ProtocolConnectionHandle {
                         for event in self.server.get_low_level().status_events() {
                             event(&packet, connection_handle.clone());
                         }
-                    }
+                    },
                 );
             }
             Stage::Login => {
@@ -48,7 +48,7 @@ impl ProtocolConnectionHandle {
                         for event in self.server.get_low_level().login_events() {
                             event(&packet, connection_handle.clone());
                         }
-                    }
+                    },
                 );
             }
             Stage::Config => {
@@ -57,7 +57,7 @@ impl ProtocolConnectionHandle {
                         for event in self.server.get_low_level().configuration_events() {
                             event(&packet, connection_handle.clone());
                         }
-                    }
+                    },
                 );
             }
             Stage::Play => {
@@ -66,7 +66,7 @@ impl ProtocolConnectionHandle {
                         for event in self.server.get_low_level().play_events() {
                             event(&packet, connection_handle.clone());
                         }
-                    }
+                    },
                 );
             }
             _ => {}
@@ -75,20 +75,16 @@ impl ProtocolConnectionHandle {
         self.inner.lock().unwrap().handle_outgoing_data();
     }
 
-    pub fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, ConnectionHandle)>(
-        &self,
-        f: F,
-    ) {
+    pub fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, ConnectionHandle)>(&self, f: F) {
         let mut inner = self.inner.lock().unwrap();
         let handle = self.clone();
 
-        let bytes = inner
-            .incoming_bytes
-            .iter()
-            .copied()
-            .collect::<Vec<_>>();
+        let bytes = inner.incoming_bytes.iter().copied().collect::<Vec<_>>();
 
-        match inner.packet_processing.decode_from_raw_queue(bytes.into_iter()) {
+        match inner
+            .packet_processing
+            .decode_from_raw_queue(bytes.into_iter())
+        {
             Ok((mut buf, consumed)) => {
                 if consumed == 0 {
                     return;

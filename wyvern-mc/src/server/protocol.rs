@@ -1,6 +1,9 @@
 use std::sync::{Arc, Mutex};
 
-use voxidian_protocol::packet::c2s::{config::C2SConfigPackets, handshake::C2SHandshakePackets, login::C2SLoginPackets, play::C2SPlayPackets, status::C2SStatusPackets};
+use voxidian_protocol::packet::c2s::{
+    config::C2SConfigPackets, handshake::C2SHandshakePackets, login::C2SLoginPackets,
+    play::C2SPlayPackets, status::C2SStatusPackets,
+};
 
 use crate::ConnectionHandle;
 

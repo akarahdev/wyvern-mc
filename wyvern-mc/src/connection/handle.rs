@@ -17,7 +17,7 @@ impl ConnectionHandle {
         ProtocolConnectionHandle {
             inner: self.inner.clone(),
             server: self.server.clone(),
-            packet_sender: self.packet_sender.clone()
+            packet_sender: self.packet_sender.clone(),
         }
     }
 }

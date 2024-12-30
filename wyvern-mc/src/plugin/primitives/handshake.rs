@@ -1,4 +1,4 @@
-use voxidian_protocol::packet::{c2s::handshake::C2SHandshakePackets, Stage};
+use voxidian_protocol::packet::{Stage, c2s::handshake::C2SHandshakePackets};
 
 use crate::plugin::Plugin;
 

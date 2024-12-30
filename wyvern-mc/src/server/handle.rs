@@ -1,4 +1,4 @@
-use crate::{Connection, plugin::Plugin, Server};
+use crate::{Connection, Server, plugin::Plugin};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
@@ -16,14 +16,21 @@ impl ServerHandle {
         self
     }
 
-    pub(crate) fn low_level<F: FnOnce(ProtocolServerHandle) -> ProtocolServerHandle>(self, f: F) -> Self {
-        let handle = ProtocolServerHandle { inner: self.inner.clone() };
+    pub(crate) fn low_level<F: FnOnce(ProtocolServerHandle) -> ProtocolServerHandle>(
+        self,
+        f: F,
+    ) -> Self {
+        let handle = ProtocolServerHandle {
+            inner: self.inner.clone(),
+        };
         f(handle);
         self
     }
 
     pub(crate) fn get_low_level(&self) -> ProtocolServerHandle {
-        ProtocolServerHandle { inner: self.inner.clone() }
+        ProtocolServerHandle {
+            inner: self.inner.clone(),
+        }
     }
 
     pub fn start<S: ToSocketAddrs>(self, address: S) {

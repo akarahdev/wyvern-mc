@@ -1,6 +1,9 @@
 pub mod primitives;
 
-use primitives::{configuration::ConfigurationPlugin, handshake::HandshakePlugin, login::LoginPlugin, play::PlayPlugin, status::StatusPlugin};
+use primitives::{
+    configuration::ConfigurationPlugin, handshake::HandshakePlugin, login::LoginPlugin,
+    play::PlayPlugin, status::StatusPlugin,
+};
 
 use crate::ServerHandle;
 

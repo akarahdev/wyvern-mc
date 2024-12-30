@@ -1,4 +1,14 @@
-use voxidian_protocol::{packet::{c2s::login::C2SLoginPackets, s2c::{config::{CustomPayloadS2CConfigPacket, KnownPack, SelectKnownPacksS2CConfigPacket}, login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty}}, Stage}, value::{ConsumeAllVec, Identifier, LengthPrefixHashMap, LengthPrefixVec, VarInt}};
+use voxidian_protocol::{
+    packet::{
+        Stage,
+        c2s::login::C2SLoginPackets,
+        s2c::{
+            config::{CustomPayloadS2CConfigPacket, KnownPack, SelectKnownPacksS2CConfigPacket},
+            login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty},
+        },
+    },
+    value::{ConsumeAllVec, Identifier, LengthPrefixHashMap, LengthPrefixVec, VarInt},
+};
 
 use crate::plugin::Plugin;
 
@@ -12,7 +22,6 @@ impl Plugin for LoginPlugin {
                     return;
                 };
                 let connection = connection.protocol_handle();
-    
                 let mut props = LengthPrefixHashMap::<VarInt, String, LoginSuccessProperty>::new();
                 props.insert(
                     "textures".into(),
@@ -32,14 +41,12 @@ impl Plugin for LoginPlugin {
                 };
                 let connection = connection.protocol_handle();
                 connection.set_stage(Stage::Config);
-    
                 let mut data = ConsumeAllVec::new();
                 data.extend("Wyvern-MC".bytes());
                 connection.send_packet(CustomPayloadS2CConfigPacket {
                     channel: Identifier::new("minecraft", "branc"),
                     data,
                 }).unwrap();
-    
                 let mut known_packs = LengthPrefixVec::new();
                 known_packs.push(KnownPack {
                     namespace: "minecraft".to_string(),

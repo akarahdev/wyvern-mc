@@ -1,6 +1,12 @@
-use std::{fmt::Debug, sync::{mpsc::Sender, Arc, Mutex}};
+use std::{
+    fmt::Debug,
+    sync::{Arc, Mutex, mpsc::Sender},
+};
 
-use voxidian_protocol::{packet::{EncodeError, PacketBuf, PacketEncode, PrefixedPacketEncode, Stage}, value::VarInt};
+use voxidian_protocol::{
+    packet::{EncodeError, PacketBuf, PacketEncode, PrefixedPacketEncode, Stage},
+    value::VarInt,
+};
 
 use crate::ServerHandle;
 
@@ -18,11 +24,14 @@ impl ProtocolConnectionHandle {
         ConnectionHandle {
             inner: self.inner.clone(),
             server: self.server.clone(),
-            packet_sender: self.packet_sender.clone()
+            packet_sender: self.packet_sender.clone(),
         }
     }
 
-    pub fn send_packet<P: PrefixedPacketEncode + PacketEncode + Debug>(&self, packet: P) -> Result<(), EncodeError> {
+    pub fn send_packet<P: PrefixedPacketEncode + PacketEncode + Debug>(
+        &self,
+        packet: P,
+    ) -> Result<(), EncodeError> {
         let mut tmp_buf = PacketBuf::new();
         packet.encode_prefixed(&mut tmp_buf)?;
         let mut buf = PacketBuf::new();
