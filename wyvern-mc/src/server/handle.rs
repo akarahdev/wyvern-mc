@@ -4,6 +4,8 @@ use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
 
+use super::PlayEvent;
+
 #[derive(Clone)]
 pub struct ServerHandle {
     pub(crate) inner: Arc<Mutex<Server>>,
@@ -51,6 +53,15 @@ impl ServerHandle {
         self.inner.lock().unwrap().config_events.clone()
     }
 
+    pub fn play_event(self, event: PlayEvent) -> Self {
+        self.inner.lock().unwrap().play_events.push(event);
+        self
+    }
+
+    pub fn play_events(&self) -> Vec<PlayEvent> {
+        self.inner.lock().unwrap().play_events.clone()
+    }
+
     pub fn start<S: ToSocketAddrs>(self, address: S) {
         let listener = TcpListener::bind(address).unwrap();
         listener
@@ -59,14 +70,12 @@ impl ServerHandle {
         loop {
             match listener.accept() {
                 Ok(conn) => {
-                    println!("accepted {:?}", conn.1);
                     conn.0.set_nonblocking(true).unwrap();
                     self.inner
                         .lock()
                         .unwrap()
                         .connections
                         .push(Connection::new(conn.0, self.clone()));
-                    println!("connections: {:?}", self.inner.lock().unwrap().connections.len());
                 }
                 Err(e) if e.kind() == ErrorKind::WouldBlock => {}
                 Err(e) => panic!("{:?}", e),

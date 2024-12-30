@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
+use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
 use voxidian_protocol::packet::{DecodeError, PrefixedPacketDecode, Stage};
 
@@ -58,6 +59,15 @@ impl ConnectionHandle {
                     }
                 );
             }
+            Stage::Play => {
+                self.parse_packets(
+                    |packet: C2SPlayPackets, connection_handle: ConnectionHandle| {
+                        for event in self.server.play_events() {
+                            event(&packet, connection_handle.clone());
+                        }
+                    }
+                );
+            }
             _ => {}
         }
 
@@ -71,9 +81,6 @@ impl ConnectionHandle {
         let mut inner = self.inner.lock().unwrap();
         let handle = self.clone();
 
-        if inner.incoming_bytes.len() > 0 {
-            println!("len: {:?}", inner.incoming_bytes.len());
-        }
         let bytes = inner
             .incoming_bytes
             .iter()
@@ -85,13 +92,9 @@ impl ConnectionHandle {
                 if consumed == 0 {
                     return;
                 }
-                println!("slen: {:?}", inner.incoming_bytes.len());
-                println!("consumed: {:?}", consumed);
                 for _ in 0..consumed {
                     inner.incoming_bytes.pop_front();
                 }
-                println!("olen: {:?}", inner.incoming_bytes.len());
-                println!("IN: {:?}", buf);
                 match T::decode_prefixed(&mut buf) {
                     Ok(packet) => {
                         drop(inner);

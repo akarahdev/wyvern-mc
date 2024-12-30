@@ -1589,6 +1589,7 @@ checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 name = "wyvern-example"
 version = "0.0.0"
 dependencies = [
+ "voxidian-protocol",
  "wyvern-mc",
 ]
 

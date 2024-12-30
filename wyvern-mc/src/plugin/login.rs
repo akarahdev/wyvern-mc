@@ -2,17 +2,19 @@ use std::vec;
 
 use crate::plugin::Plugin;
 use crate::{ClientRegistryCache, ServerHandle};
+use voxidian_protocol::mojang::auth_verify::MojAuth;
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
+use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
 use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, RegistryDataS2CConfigPacket, SelectKnownPacksS2CConfigPacket};
 use voxidian_protocol::packet::s2c::login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty};
-use voxidian_protocol::packet::s2c::play::{GameEvent, GameEventS2CPlayPacket, Gamemode, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, TeleportFlags};
+use voxidian_protocol::packet::s2c::play::{BlockUpdateS2CPlayPacket, ChunkBatchFinishedS2CPlayPacket, ChunkBatchStartS2CPlayPacket, GameEvent, GameEventS2CPlayPacket, Gamemode, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, S2CPlayPackets, SetChunkCacheCentreS2CPlayPacket, TeleportFlags};
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
 use voxidian_protocol::registry::{RegEntry, Registry};
-use voxidian_protocol::value::{Biome, ConsumeAllVec, DamageDifficultyScaling, DamageType, DeathMessageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
+use voxidian_protocol::value::{Biome, BlockPos, BlockState, ConsumeAllVec, DamageDifficultyScaling, DamageType, DeathMessageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
 
 pub struct LoginProtocol;
 
@@ -68,7 +70,7 @@ impl Plugin for LoginProtocol {
             props.insert(
                 "textures".into(),
                 LoginSuccessProperty {
-                    value: "ewogICJ0aW1lc3RhbXAiIDogMTYxMjIxMTAxNDg1MywKICAicHJvZmlsZUlkIiA6sICI1ZWE0ODg2NTg2OWI0Y2ZhOWRjNTg5YmFlZWQwNzM5MCIsCiAgInByb2ZpbGVOYW1lIiA6ICJfUllOMF8iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2NmNDU1YmI4NjcyN2M1NjFlNjI2ZDIxZjA3MGE1OTdmMDlhOTZkOGFhNmMwZmRjM2JjYjZkMDE2NTZjMDk3OCIKICAgIH0KICB9Cn0".to_string(),
+                    value: "ewogICJ0aW1lc3RhbXAiIDogMTYxMjIxMTAxNDg1MywKICAicHJvZmlsZUlkIiA6ICI1ZWE0ODg2NTg2OWI0Y2ZhOWRjNTg5YmFlZWQwNzM5MCIsCiAgInByb2ZpbGVOYW1lIiA6ICJfUllOMF8iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2NmNDU1YmI4NjcyN2M1NjFlNjI2ZDIxZjA3MGE1OTdmMDlhOTZkOGFhNmMwZmRjM2JjYjZkMDE2NTZjMDk3OCIKICAgIH0KICB9Cn0=".to_string(),
                     sig: Some("SA3W+MXMEWPOwmktk2K8G9kYSb07loa/UOCqBF7PBlvMzGrPb7clNQS/JP2uXU3BxlunguuLPK2bR+Q86neBBSzndSErB8oyJorogi/1y0LOEFVF98Iy0hGrDDCuuT+236SY2L+u05Y/cpN7M/lE4J2YLitx7RzWfqcdxIJE8nCcJcfso1YKEMHzKlkQkxtZOd5+HDfmAlI9qSaK0LpgEFF5DieYMhRvbC6Vl54AXTfTYMZ1QmixmxdBXMSF1sDWzl57Jx79Q6djB/BahMC9aj83rTcyZJaXJS6PqVOULx7YZFs89abVtzrj+pvt3b2SMZoEbjOMsGulXy336NJBuf7mPN+MXz2bnwGbhxYwDrMdSwUjgm+iH9XWwN3piAovenhRyW4vdpXVYf4993gnQBbOVyDFmf/COLt5mezsSNTmCMkoEXrdvz02JjzxmzXasv25rglPSlZFWmStrEMGTHARLtNvKF+SL5LYiHl8rBJrvQDEOSj0fR3eH9o+MSlT5veNjdtDFt2Llc+0tiSqvuM1e3PnE72ALC6cPDludDQI9+YFbX5uV1miB0C0Fe/+DEGe3oVtufP122yobEB1fegWf02BZtCp4Ss8Zm8JOQepXhOvw7QjJFyRckZRHa0GlkBdMYr5GHNe9cTtPEUEAOwrQ86eqo/jk/IFMChiNvY=".to_string()),
                 },
             );
@@ -169,15 +171,6 @@ impl Plugin for LoginProtocol {
             connection.send_packet(dim_type_registry.to_registry_data_packet()).unwrap();
             connection.send_packet(wolf_variant.to_registry_data_packet()).unwrap();
             connection.send_packet(painting_variant.to_registry_data_packet()).unwrap();
-            
-            connection.send_packet(RegistryDataS2CConfigPacket {
-                registry: Identifier::new("minecraft", "wolf_variant"),
-                entries: LengthPrefixHashMap::new()
-            }).unwrap();
-            connection.send_packet(RegistryDataS2CConfigPacket {
-                registry: Identifier::new("minecraft", "painting_variant"),
-                entries: LengthPrefixHashMap::new()
-            }).unwrap();
 
             connection.send_packet(FinishConfigurationS2CConfigPacket).unwrap();
         }).configuration_event(|packet, connection| {
@@ -222,7 +215,7 @@ impl Plugin for LoginProtocol {
             connection.send_packet(PlayerPositionS2CPlayPacket {
                 teleport_id: VarInt::from(1),
                 x: 0.0,
-                y: 64.0,
+                y: 255.0,
                 z: 0.0,
                 vx: 0.0,
                 vy: 0.0,
@@ -240,6 +233,51 @@ impl Plugin for LoginProtocol {
                     relative_vz: false,
                     rotate_velocity: false
                 }
+            }).unwrap();
+
+            
+        }).play_event(|packet, connection| {
+            println!("Play Packet: {:?}", packet);
+        }).play_event(|packet, connection| {
+            let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
+                return;
+            };
+
+            if packet.teleport_id != VarInt::from(1) {
+                return;
+            }
+
+            connection.send_packet(PlayerPositionS2CPlayPacket {
+                teleport_id: VarInt::from(2),
+                x: 0.0,
+                y: 90.0,
+                z: 0.0,
+                vx: 0.0,
+                vy: 0.0,
+                vz: 0.0,
+                adyaw_deg: 0.0,
+                adpitch_deg: 0.0,
+                flags: TeleportFlags {
+                    relative_x: false,
+                    relative_y: false,
+                    relative_z: false,
+                    relative_pitch: false,
+                    relative_yaw: false,
+                    relative_vx: false,
+                    relative_vy: false,
+                    relative_vz: false,
+                    rotate_velocity: false
+                }
+            }).unwrap();
+
+            connection.send_packet(BlockUpdateS2CPlayPacket {
+                pos: BlockPos::new(0, 64, 0),
+                block: unsafe { RegEntry::new_unchecked(
+                    BlockState {
+                        id: Identifier::new("minecraft", "grass_block"),
+                        properties: vec![("snowy".to_string(), "false".to_string())],
+                    }.to_id().unwrap() as usize
+                )},
             }).unwrap();
         });
     }

@@ -1,9 +1,11 @@
 [package]
 name = "wyvern-example"
 version = "0.0.0"
+edition = "2024"
 
 [dev-dependencies]
 wyvern-mc = { path = "../wyvern-mc" }
+voxidian-protocol = { path = "../../voxidian/protocol" }
 
 [[example]]
 name = "simple"
