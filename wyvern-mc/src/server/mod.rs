@@ -4,12 +4,12 @@ pub use handle::*;
 mod protocol;
 pub use protocol::*;
 
-use crate::ConnectionHandle;
+use crate::Connection;
 use std::sync::{Arc, Mutex};
 
 #[derive(Default)]
-pub struct Server {
-    connections: Vec<ConnectionHandle>,
+pub struct ServerData {
+    connections: Vec<Connection>,
 
     handshake_events: Vec<HandshakeEvent>,
     status_events: Vec<StatusEvent>,
@@ -20,9 +20,9 @@ pub struct Server {
 
 impl Server {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> ServerHandle {
-        ServerHandle {
-            inner: Arc::new(Mutex::new(Server::default())),
+    pub fn new() -> Server {
+        Server {
+            inner: Arc::new(Mutex::new(ServerData::default())),
         }
     }
 }

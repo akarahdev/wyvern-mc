@@ -22,7 +22,7 @@ use crate::plugin::Plugin;
 pub struct ConfigurationPlugin;
 
 impl Plugin for ConfigurationPlugin {
-    fn load(&self, server: crate::ServerHandle) {
+    fn load(&self, server: crate::Server) {
         server.low_level(|server| {
             server
                 .configuration_event(|packet, _connection| {

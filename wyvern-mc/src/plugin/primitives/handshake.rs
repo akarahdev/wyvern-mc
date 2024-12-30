@@ -5,7 +5,7 @@ use crate::plugin::Plugin;
 pub struct HandshakePlugin;
 
 impl Plugin for HandshakePlugin {
-    fn load(&self, server: crate::ServerHandle) {
+    fn load(&self, server: crate::Server) {
         server.low_level(|server| {
             server.handshake_event(|packet, conn| {
                 let C2SHandshakePackets::Intention(packet) = packet;

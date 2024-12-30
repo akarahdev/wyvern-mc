@@ -1,23 +1,23 @@
 use crate::values::{Location, Position};
-use crate::{Connection, ServerHandle};
+use crate::{ConnectionData, Server};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use voxidian_protocol::packet::s2c::play::{PlayerPositionS2CPlayPacket, TeleportFlags};
 use voxidian_protocol::packet::PacketBuf;
 use voxidian_protocol::value::VarInt;
 
-use super::protocol::ProtocolConnectionHandle;
+use super::protocol::UnsafeConnection;
 
 #[derive(Clone)]
-pub struct ConnectionHandle {
-    pub(crate) inner: Arc<Mutex<Connection>>,
-    pub(crate) server: ServerHandle,
+pub struct Connection {
+    pub(crate) inner: Arc<Mutex<ConnectionData>>,
+    pub(crate) server: Server,
     pub(crate) packet_sender: Sender<PacketBuf>,
 }
 
-impl ConnectionHandle {
-    pub fn protocol_handle(&self) -> ProtocolConnectionHandle {
-        ProtocolConnectionHandle {
+impl Connection {
+    pub fn protocol_handle(&self) -> UnsafeConnection {
+        UnsafeConnection {
             inner: self.inner.clone(),
             server: self.server.clone(),
             packet_sender: self.packet_sender.clone(),

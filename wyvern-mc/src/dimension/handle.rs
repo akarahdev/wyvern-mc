@@ -5,12 +5,12 @@ use crate::values::Key;
 use super::DimensionData;
 
 #[derive(Clone)]
-pub struct DimensionHandle {
+pub struct Dimension {
     inner: Arc<Mutex<DimensionData>>
 }
 
-impl DimensionHandle {
-    pub fn name(&self) -> Key<DimensionHandle> {
+impl Dimension {
+    pub fn name(&self) -> Key<Dimension> {
         self.inner.lock().unwrap().name.clone()
     }
 }

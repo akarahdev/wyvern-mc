@@ -15,7 +15,7 @@ use crate::plugin::Plugin;
 pub struct PlayPlugin;
 
 impl Plugin for PlayPlugin {
-    fn load(&self, server: crate::ServerHandle) {
+    fn load(&self, server: crate::Server) {
         server.low_level(|server| {
             server
                 .play_event(|packet, _connection| {

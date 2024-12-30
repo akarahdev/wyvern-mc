@@ -1,4 +1,4 @@
-use crate::ConnectionHandle;
+use crate::Connection;
 use std::fmt::Debug;
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
@@ -7,9 +7,9 @@ use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
 use voxidian_protocol::packet::{DecodeError, PrefixedPacketDecode, Stage};
 
-use super::protocol::ProtocolConnectionHandle;
+use super::protocol::UnsafeConnection;
 
-impl ProtocolConnectionHandle {
+impl UnsafeConnection {
     pub fn mark_for_removal(&self) {
         self.inner.lock().unwrap().mark_for_removal = true;
     }
@@ -26,7 +26,7 @@ impl ProtocolConnectionHandle {
         match stage {
             Stage::Handshake => {
                 self.parse_packets(
-                    |packet: C2SHandshakePackets, connection_handle: ConnectionHandle| {
+                    |packet: C2SHandshakePackets, connection_handle: Connection| {
                         for event in self.server.get_low_level().handshake_events() {
                             event(&packet, connection_handle.clone())
                         }
@@ -35,7 +35,7 @@ impl ProtocolConnectionHandle {
             }
             Stage::Status => {
                 self.parse_packets(
-                    |packet: C2SStatusPackets, connection_handle: ConnectionHandle| {
+                    |packet: C2SStatusPackets, connection_handle: Connection| {
                         for event in self.server.get_low_level().status_events() {
                             event(&packet, connection_handle.clone());
                         }
@@ -44,7 +44,7 @@ impl ProtocolConnectionHandle {
             }
             Stage::Login => {
                 self.parse_packets(
-                    |packet: C2SLoginPackets, connection_handle: ConnectionHandle| {
+                    |packet: C2SLoginPackets, connection_handle: Connection| {
                         for event in self.server.get_low_level().login_events() {
                             event(&packet, connection_handle.clone());
                         }
@@ -53,7 +53,7 @@ impl ProtocolConnectionHandle {
             }
             Stage::Config => {
                 self.parse_packets(
-                    |packet: C2SConfigPackets, connection_handle: ConnectionHandle| {
+                    |packet: C2SConfigPackets, connection_handle: Connection| {
                         for event in self.server.get_low_level().configuration_events() {
                             event(&packet, connection_handle.clone());
                         }
@@ -62,7 +62,7 @@ impl ProtocolConnectionHandle {
             }
             Stage::Play => {
                 self.parse_packets(
-                    |packet: C2SPlayPackets, connection_handle: ConnectionHandle| {
+                    |packet: C2SPlayPackets, connection_handle: Connection| {
                         for event in self.server.get_low_level().play_events() {
                             event(&packet, connection_handle.clone());
                         }
@@ -75,7 +75,7 @@ impl ProtocolConnectionHandle {
         self.inner.lock().unwrap().handle_outgoing_data();
     }
 
-    pub fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, ConnectionHandle)>(&self, f: F) {
+    pub fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, Connection)>(&self, f: F) {
         let mut inner = self.inner.lock().unwrap();
         let handle = self.clone();
 
@@ -95,7 +95,7 @@ impl ProtocolConnectionHandle {
                 match T::decode_prefixed(&mut buf) {
                     Ok(packet) => {
                         drop(inner);
-                        f(packet, handle.to_normal())
+                        f(packet, handle.to_safe())
                     }
                     Err(DecodeError::EndOfBuffer) => {}
                     Err(e) => {

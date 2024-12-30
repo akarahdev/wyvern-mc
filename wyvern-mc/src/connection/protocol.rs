@@ -8,20 +8,20 @@ use voxidian_protocol::{
     value::VarInt,
 };
 
-use crate::ServerHandle;
+use crate::Server;
 
-use super::{Connection, ConnectionHandle};
+use super::{ConnectionData, Connection};
 
 #[derive(Clone)]
-pub struct ProtocolConnectionHandle {
-    pub(crate) inner: Arc<Mutex<Connection>>,
-    pub(crate) server: ServerHandle,
+pub struct UnsafeConnection {
+    pub(crate) inner: Arc<Mutex<ConnectionData>>,
+    pub(crate) server: Server,
     pub(crate) packet_sender: Sender<PacketBuf>,
 }
 
-impl ProtocolConnectionHandle {
-    pub fn to_normal(&self) -> ConnectionHandle {
-        ConnectionHandle {
+impl UnsafeConnection {
+    pub fn to_safe(&self) -> Connection {
+        Connection {
             inner: self.inner.clone(),
             server: self.server.clone(),
             packet_sender: self.packet_sender.clone(),

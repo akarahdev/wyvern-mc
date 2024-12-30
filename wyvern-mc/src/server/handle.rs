@@ -1,34 +1,34 @@
-use crate::{Connection, Server, plugin::Plugin};
+use crate::{ConnectionData, ServerData, plugin::Plugin};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
 
-use super::ProtocolServerHandle;
+use super::UnsafeServer;
 
 #[derive(Clone)]
-pub struct ServerHandle {
-    pub(crate) inner: Arc<Mutex<Server>>,
+pub struct Server {
+    pub(crate) inner: Arc<Mutex<ServerData>>,
 }
 
-impl ServerHandle {
+impl Server {
     pub fn add_plugin<P: Plugin>(self, plugin: P) -> Self {
         plugin.load(self.clone());
         self
     }
 
-    pub(crate) fn low_level<F: FnOnce(ProtocolServerHandle) -> ProtocolServerHandle>(
+    pub(crate) fn low_level<F: FnOnce(UnsafeServer) -> UnsafeServer>(
         self,
         f: F,
     ) -> Self {
-        let handle = ProtocolServerHandle {
+        let handle = UnsafeServer {
             inner: self.inner.clone(),
         };
         f(handle);
         self
     }
 
-    pub(crate) fn get_low_level(&self) -> ProtocolServerHandle {
-        ProtocolServerHandle {
+    pub(crate) fn get_low_level(&self) -> UnsafeServer {
+        UnsafeServer {
             inner: self.inner.clone(),
         }
     }
@@ -46,7 +46,7 @@ impl ServerHandle {
                         .lock()
                         .unwrap()
                         .connections
-                        .push(Connection::new(conn.0, self.clone()));
+                        .push(ConnectionData::new(conn.0, self.clone()));
                 }
                 Err(e) if e.kind() == ErrorKind::WouldBlock => {}
                 Err(e) => panic!("{:?}", e),

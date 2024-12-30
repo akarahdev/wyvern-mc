@@ -5,21 +5,21 @@ use voxidian_protocol::packet::c2s::{
     play::C2SPlayPackets, status::C2SStatusPackets,
 };
 
-use crate::ConnectionHandle;
+use crate::Connection;
 
-use super::Server;
+use super::ServerData;
 
-pub(crate) type HandshakeEvent = fn(&C2SHandshakePackets, ConnectionHandle);
-pub(crate) type StatusEvent = fn(&C2SStatusPackets, ConnectionHandle);
-pub(crate) type LoginEvent = fn(&C2SLoginPackets, ConnectionHandle);
-pub(crate) type ConfigEvent = fn(&C2SConfigPackets, ConnectionHandle);
-pub(crate) type PlayEvent = fn(&C2SPlayPackets, ConnectionHandle);
+pub(crate) type HandshakeEvent = fn(&C2SHandshakePackets, Connection);
+pub(crate) type StatusEvent = fn(&C2SStatusPackets, Connection);
+pub(crate) type LoginEvent = fn(&C2SLoginPackets, Connection);
+pub(crate) type ConfigEvent = fn(&C2SConfigPackets, Connection);
+pub(crate) type PlayEvent = fn(&C2SPlayPackets, Connection);
 
-pub struct ProtocolServerHandle {
-    pub(crate) inner: Arc<Mutex<Server>>,
+pub struct UnsafeServer {
+    pub(crate) inner: Arc<Mutex<ServerData>>,
 }
 
-impl ProtocolServerHandle {
+impl UnsafeServer {
     pub fn handshake_event(self, event: HandshakeEvent) -> Self {
         self.inner.lock().unwrap().handshake_events.push(event);
         self

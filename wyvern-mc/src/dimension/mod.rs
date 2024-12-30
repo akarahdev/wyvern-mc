@@ -6,11 +6,11 @@ pub use handle::*;
 use crate::values::{Key, Vector};
 
 pub struct DimensionRegistry {
-    dimensions: HashMap<Key<DimensionHandle>, DimensionHandle>
+    dimensions: HashMap<Key<Dimension>, Dimension>
 }
 
 
 pub struct DimensionData {
-    name: Key<DimensionHandle>,
+    name: Key<Dimension>,
     blocks: HashMap<Vector, () /* todo: block state value */>
 }

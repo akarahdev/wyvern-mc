@@ -15,7 +15,7 @@ use crate::plugin::Plugin;
 pub struct LoginPlugin;
 
 impl Plugin for LoginPlugin {
-    fn load(&self, server: crate::ServerHandle) {
+    fn load(&self, server: crate::Server) {
         server.low_level(|server| {
             server.login_event(|packet, connection| {
                 let C2SLoginPackets::Hello(packet) = packet else {

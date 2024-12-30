@@ -5,7 +5,7 @@ pub mod protocol;
 mod data;
 pub use data::*;
 
-use crate::ServerHandle;
+use crate::Server;
 use std::collections::VecDeque;
 use std::io::{ErrorKind, Read, Write};
 use std::net::TcpStream;
@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
 use voxidian_protocol::packet::{PacketBuf, Stage};
 
-pub struct Connection {
+pub struct ConnectionData {
     packet_sender: Sender<PacketBuf>,
     packet_receiver: Receiver<PacketBuf>,
     stream: TcpStream,
@@ -25,12 +25,12 @@ pub struct Connection {
     player_data: PlayerData
 }
 
-impl Connection {
+impl ConnectionData {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(stream: TcpStream, handle: ServerHandle) -> ConnectionHandle {
+    pub fn new(stream: TcpStream, handle: Server) -> Connection {
         let (sender, recv) = channel();
-        ConnectionHandle {
-            inner: Arc::new(Mutex::new(Connection {
+        Connection {
+            inner: Arc::new(Mutex::new(ConnectionData {
                 packet_sender: sender.clone(),
                 packet_receiver: recv,
                 stream,

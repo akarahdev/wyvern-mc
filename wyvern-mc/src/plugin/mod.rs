@@ -5,16 +5,16 @@ use primitives::{
     play::PlayPlugin, status::StatusPlugin,
 };
 
-use crate::ServerHandle;
+use crate::Server;
 
 pub trait Plugin {
-    fn load(&self, server: ServerHandle);
+    fn load(&self, server: Server);
 }
 
 pub struct Setup;
 
 impl Plugin for Setup {
-    fn load(&self, server: ServerHandle) {
+    fn load(&self, server: Server) {
         server
             .add_plugin(HandshakePlugin)
             .add_plugin(LoginPlugin)
