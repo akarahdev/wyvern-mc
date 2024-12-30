@@ -1,7 +1,7 @@
 mod handle;
 mod net;
-
 pub use handle::*;
+pub mod protocol;
 
 use crate::ServerHandle;
 use std::collections::VecDeque;

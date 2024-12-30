@@ -49,12 +49,12 @@ impl ServerHandle {
                 .lock()
                 .unwrap()
                 .connections
-                .retain(|x| !x.marked_for_removal());
+                .retain(|x| !x.protocol_handle().marked_for_removal());
 
             let connections = self.inner.lock().unwrap().connections.clone();
 
             for connection in connections {
-                connection.handle_incoming_data();
+                connection.protocol_handle().handle_incoming_data();
             }
         }
     }

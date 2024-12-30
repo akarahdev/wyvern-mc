@@ -7,18 +7,19 @@ use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
 use voxidian_protocol::packet::{DecodeError, PrefixedPacketDecode, Stage};
 
-impl ConnectionHandle {
-    #[allow(unused)]
-    pub(crate) fn mark_for_removal(&self) {
+use super::protocol::ProtocolConnectionHandle;
+
+impl ProtocolConnectionHandle {
+    pub fn mark_for_removal(&self) {
         self.inner.lock().unwrap().mark_for_removal = true;
     }
 
-    pub(crate) fn marked_for_removal(&self) -> bool {
+    pub fn marked_for_removal(&self) -> bool {
         let inner = self.inner.lock().unwrap();
         *&inner.mark_for_removal
     }
 
-    pub(crate) fn handle_incoming_data(&self) {
+    pub fn handle_incoming_data(&self) {
         self.inner.lock().unwrap().handle_incoming_data();
         let stage = self.get_stage();
 
@@ -74,7 +75,7 @@ impl ConnectionHandle {
         self.inner.lock().unwrap().handle_outgoing_data();
     }
 
-    pub(crate) fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, ConnectionHandle)>(
+    pub fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, ConnectionHandle)>(
         &self,
         f: F,
     ) {
@@ -98,7 +99,7 @@ impl ConnectionHandle {
                 match T::decode_prefixed(&mut buf) {
                     Ok(packet) => {
                         drop(inner);
-                        f(packet, handle)
+                        f(packet, handle.to_normal())
                     }
                     Err(DecodeError::EndOfBuffer) => {}
                     Err(e) => {

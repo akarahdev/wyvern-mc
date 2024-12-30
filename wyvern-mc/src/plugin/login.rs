@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::plugin::Plugin;
-use crate::ServerHandle;
+use crate::{connection, ServerHandle};
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
@@ -22,6 +22,7 @@ impl Plugin for LoginProtocol {
         server.low_level(|server| {
             server.handshake_event(|packet, conn| {
                 let C2SHandshakePackets::Intention(packet) = packet;
+                let conn = conn.protocol_handle();
                 let stage = packet.intended_stage.into_stage();
                 println!("new stage: {:?}", stage);
                 match stage {
@@ -34,12 +35,12 @@ impl Plugin for LoginProtocol {
             }).status_event(|packet, connection| {
                 match packet {
                     C2SStatusPackets::PingRequest(packet) => {
-                        connection.send_packet(PongResponseS2CStatusPacket {
+                        connection.protocol_handle().send_packet(PongResponseS2CStatusPacket {
                             timestamp: packet.timestamp,
                         }).unwrap();
                     }
                     C2SStatusPackets::StatusRequest(_packet) => {
-                        connection.send_packet(
+                        connection.protocol_handle().send_packet(
                             StatusResponse {
                                 version: StatusResponseVersion {
                                     name: "1.21.1".to_string(),
@@ -64,6 +65,7 @@ impl Plugin for LoginProtocol {
                 let C2SLoginPackets::Hello(packet) = packet else {
                     return;
                 };
+                let connection = connection.protocol_handle();
     
                 let mut props =
                     LengthPrefixHashMap::<VarInt, String, LoginSuccessProperty>::new();
@@ -83,6 +85,7 @@ impl Plugin for LoginProtocol {
                 let C2SLoginPackets::LoginAcknowledged(_packet) = packet else {
                     return;
                 };
+                let connection = connection.protocol_handle();
                 connection.set_stage(Stage::Config);
     
                 let mut data = ConsumeAllVec::new();
@@ -116,6 +119,8 @@ impl Plugin for LoginProtocol {
                 let C2SConfigPackets::SelectKnownPacks(_packet) = packet else {
                     return;
                 };
+
+                let connection = connection.protocol_handle();
     
                 let mut dim_type_registry = Registry::new();
                 dim_type_registry.insert(
@@ -178,8 +183,8 @@ impl Plugin for LoginProtocol {
                     return;
                 };
     
+                let connection = connection.protocol_handle();
                 
-    
                 connection.set_stage(Stage::Play);
     
                 let mut dims = LengthPrefixVec::new();
@@ -248,6 +253,8 @@ impl Plugin for LoginProtocol {
                     return;
                 }
     
+                let connection = connection.protocol_handle();
+                
                 for chunk_x in -2..2 {
                     for chunk_z in -2..2 {
                         connection.send_packet(WorldChunkWithLightS2CPlayPacket {
