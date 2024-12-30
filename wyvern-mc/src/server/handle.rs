@@ -1,4 +1,4 @@
-use crate::{Connection, Plugin, Server};
+use crate::{Connection, plugin::Plugin, Server};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
