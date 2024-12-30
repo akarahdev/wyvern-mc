@@ -12,7 +12,7 @@ use voxidian_protocol::packet::s2c::play::{GameEvent, GameEventS2CPlayPacket, Ga
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
 use voxidian_protocol::registry::{RegEntry, Registry};
-use voxidian_protocol::value::{ConsumeAllVec, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
+use voxidian_protocol::value::{Biome, ConsumeAllVec, DamageDifficultyScaling, DamageType, DeathMessageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
 
 pub struct LoginProtocol;
 
@@ -145,9 +145,9 @@ impl Plugin for LoginProtocol {
             wolf_variant.insert(
                 Identifier::new("minecraft", "pale"), 
                 WolfVariant {
-                    wild_tex: Identifier::new("minecraft", "wild_tex"),
-                    tame_tex: Identifier::new("minecraft", "tame_tex"),
-                    angry_tex: Identifier::new("minecraft", "angry_tex"),
+                    wild_texture: Identifier::new("minecraft", "wild_tex"),
+                    tame_texture: Identifier::new("minecraft", "tame_tex"),
+                    angry_texture: Identifier::new("minecraft", "angry_tex"),
                     biomes: vec![]
                 }
             );
@@ -156,7 +156,7 @@ impl Plugin for LoginProtocol {
             painting_variant.insert(
                 Identifier::new("minecraft", "empty_painting"), 
                 PaintingVariant {
-                    asset: Identifier::new("minecraft", "empty_painting"),
+                    asset_id: Identifier::new("minecraft", "empty_painting"),
                     width: 1,
                     height: 1,
                     title: TextComponent::of_literal("Empty Painting"),
@@ -164,6 +164,8 @@ impl Plugin for LoginProtocol {
                 }
             );
 
+            connection.send_packet(DamageType::vanilla_registry().to_registry_data_packet()).unwrap();
+            connection.send_packet(Biome::vanilla_registry().to_registry_data_packet()).unwrap();
             connection.send_packet(dim_type_registry.to_registry_data_packet()).unwrap();
             connection.send_packet(wolf_variant.to_registry_data_packet()).unwrap();
             connection.send_packet(painting_variant.to_registry_data_packet()).unwrap();
