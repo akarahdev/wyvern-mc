@@ -9,11 +9,11 @@ use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use voxidian_protocol::packet::c2s::status::C2SStatusPackets;
 use voxidian_protocol::packet::s2c::config::{CustomPayloadS2CConfigPacket, FinishConfigurationS2CConfigPacket, KnownPack, SelectKnownPacksS2CConfigPacket};
 use voxidian_protocol::packet::s2c::login::{LoginFinishedS2CLoginPacket, LoginSuccessProperty};
-use voxidian_protocol::packet::s2c::play::{BlockUpdateS2CPlayPacket, GameEvent, GameEventS2CPlayPacket, Gamemode, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, S2CPlayPackets, SetChunkCacheCentreS2CPlayPacket, TeleportFlags};
+use voxidian_protocol::packet::s2c::play::{BlockUpdateS2CPlayPacket, GameEvent, GameEventS2CPlayPacket, Gamemode, LightMask, LoginS2CPlayPacket, PlayerPositionS2CPlayPacket, S2CPlayPackets, SetChunkCacheCentreS2CPlayPacket, TeleportFlags, WorldChunkWithLightS2CPlayPacket};
 use voxidian_protocol::packet::s2c::status::{PongResponseS2CStatusPacket, StatusResponse, StatusResponsePlayers, StatusResponseVersion};
 use voxidian_protocol::packet::Stage;
 use voxidian_protocol::registry::{RegEntry, Registry};
-use voxidian_protocol::value::{Biome, BlockPos, BlockState, ConsumeAllVec, DamageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant};
+use voxidian_protocol::value::{Biome, BlockPos, BlockState, ChunkSection, ChunkSectionData, ConsumeAllVec, DamageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier, LengthPrefixHashMap, LengthPrefixVec, Nbt, NbtCompound, PaintingVariant, PaletteFormat, PalettedContainer, TextComponent, VarInt, WolfVariant};
 
 pub struct LoginProtocol;
 
@@ -129,9 +129,9 @@ impl Plugin for LoginProtocol {
                     bed_works: true,
                     respawn_anchor_works: false,
                     min_y: 0,
-                    max_y: 128,
-                    logical_height: 128,
-                    height: 128,
+                    max_y: 16,
+                    logical_height: 16,
+                    height: 16,
                     infiniburn: "#minecraft:infiniburn_overworld".to_string(),
                     effects: DimEffects::Nether,
                     ambient_light: 15.0,
@@ -213,9 +213,9 @@ impl Plugin for LoginProtocol {
 
             connection.send_packet(PlayerPositionS2CPlayPacket {
                 teleport_id: VarInt::from(1),
-                x: 0.0,
-                y: 255.0,
-                z: 0.0,
+                x: 8.0,
+                y: 16.0,
+                z: 8.0,
                 vx: 0.0,
                 vy: 0.0,
                 vz: 0.0,
@@ -237,6 +237,7 @@ impl Plugin for LoginProtocol {
             
         }).play_event(|packet, connection| {
             println!("Play Packet: {:?}", packet);
+
         }).play_event(|packet, connection| {
             let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
                 return;
@@ -246,37 +247,57 @@ impl Plugin for LoginProtocol {
                 return;
             }
 
-            connection.send_packet(PlayerPositionS2CPlayPacket {
-                teleport_id: VarInt::from(2),
-                x: 0.0,
-                y: 90.0,
-                z: 0.0,
-                vx: 0.0,
-                vy: 0.0,
-                vz: 0.0,
-                adyaw_deg: 0.0,
-                adpitch_deg: 0.0,
-                flags: TeleportFlags {
-                    relative_x: false,
-                    relative_y: false,
-                    relative_z: false,
-                    relative_pitch: false,
-                    relative_yaw: false,
-                    relative_vx: false,
-                    relative_vy: false,
-                    relative_vz: false,
-                    rotate_velocity: false
+            for chunk_x in -2..2 {
+                for chunk_z in -2..2 {
+                    connection.send_packet(WorldChunkWithLightS2CPlayPacket {
+                        chunk_x,
+                        chunk_z,
+                        heightmaps: Nbt { name: "".to_string(), root: NbtCompound::new() },
+                        data: ChunkSectionData {
+                            sections: vec![
+                                ChunkSection { 
+                                    block_count: 0, 
+                                    block_states: PalettedContainer {
+                                        bits_per_entry: 0,
+                                        format: PaletteFormat::SingleValued { entry: unsafe { RegEntry::new_unchecked(0) } }
+                                    }, 
+                                    biomes: PalettedContainer { 
+                                        bits_per_entry: 0, 
+                                        format: PaletteFormat::SingleValued { entry: unsafe { RegEntry::new_unchecked(0) } }
+                                    }
+                                }
+                            ]
+                        },
+                        block_entities: LengthPrefixVec::new(),
+                        sky_light_mask: LengthPrefixVec::new(),
+                        block_light_mask: LengthPrefixVec::new(),
+                        empty_sky_light_mask: LengthPrefixVec::new(),
+                        empty_block_light_mask: LengthPrefixVec::new(),
+                        sky_light_array: LengthPrefixVec::new(),
+                        block_light_array: LengthPrefixVec::new(),
+                    }).unwrap();
                 }
-            }).unwrap();
+            }
 
             connection.send_packet(BlockUpdateS2CPlayPacket {
-                pos: BlockPos::new(0, 64, 0),
-                block: unsafe { RegEntry::new_unchecked(
-                    BlockState {
-                        id: Identifier::new("minecraft", "grass_block"),
-                        properties: vec![("snowy".to_string(), "false".to_string())],
-                    }.to_id().unwrap() as usize
-                )},
+                pos: BlockPos::new(8, 5, 8),
+                block: unsafe { RegEntry::new_unchecked(3) },
+            }).unwrap();
+            connection.send_packet(BlockUpdateS2CPlayPacket {
+                pos: BlockPos::new(8, 5, 11),
+                block: unsafe { RegEntry::new_unchecked(4) },
+            }).unwrap();
+            connection.send_packet(BlockUpdateS2CPlayPacket {
+                pos: BlockPos::new(10, 5, 14),
+                block: unsafe { RegEntry::new_unchecked(5) },
+            }).unwrap();
+            connection.send_packet(BlockUpdateS2CPlayPacket {
+                pos: BlockPos::new(10, 5, 17),
+                block: unsafe { RegEntry::new_unchecked(5) },
+            }).unwrap();
+            connection.send_packet(BlockUpdateS2CPlayPacket {
+                pos: BlockPos::new(7, 5, 18),
+                block: unsafe { RegEntry::new_unchecked(5) },
             }).unwrap();
         });
     }

@@ -14,7 +14,6 @@ pub struct ConnectionHandle {
 
 impl ConnectionHandle {
     pub fn send_packet<P: PrefixedPacketEncode + PacketEncode + Debug>(&self, packet: P) -> Result<(), EncodeError> {
-        println!("OUT: {:?}", packet);
         let mut tmp_buf = PacketBuf::new();
         packet.encode_prefixed(&mut tmp_buf)?;
         let mut buf = PacketBuf::new();
