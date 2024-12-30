@@ -1,3 +1,5 @@
+use super::Position;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Location {
     x: f64,
@@ -7,20 +9,48 @@ pub struct Location {
     yaw: f32,
 }
 
+impl Position for Location {
+    fn x(&self) -> f64 {
+        self.x
+    }
+
+    fn y(&self) -> f64 {
+        self.y
+    }
+
+    fn z(&self) -> f64 {
+        self.z
+    }
+}
+
 impl Location {
-    pub fn new<X: Into<f64>, Y: Into<f64>, Z: Into<f64>, Pitch: Into<f32>, Yaw: Into<f32>>(
-        x: X,
-        y: Y,
-        z: Z,
-        pitch: Pitch,
-        yaw: Yaw,
-    ) -> Location {
+    pub fn new(x: f64, y: f64, z: f64, pitch: f32, yaw: f32) -> Location {
         Location {
-            x: x.into(),
-            y: y.into(),
-            z: z.into(),
-            pitch: pitch.into(),
-            yaw: yaw.into(),
+            x,
+            y,
+            z,
+            pitch,
+            yaw,
+        }
+    }
+
+    pub fn shift_by<P: Position>(&self, other: P) -> Location {
+        Location {
+            x: self.x + other.x(),
+            y: self.y + other.y(),
+            z: self.z + other.z(),
+            pitch: self.pitch,
+            yaw: self.yaw
+        }
+    }
+
+    pub fn center(&self) -> Location {
+        Location {
+            x: self.x.round(),
+            y: self.y.floor(),
+            z: self.z.floor(),
+            pitch: 0.0,
+            yaw: 0.0,
         }
     }
 }
