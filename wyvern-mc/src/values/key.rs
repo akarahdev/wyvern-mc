@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+#[derive(Debug, Clone)]
 pub struct Key<T> {
     namespace: String,
     path: String,

@@ -2,6 +2,8 @@ mod handle;
 mod net;
 pub use handle::*;
 pub mod protocol;
+mod data;
+pub use data::*;
 
 use crate::ServerHandle;
 use std::collections::VecDeque;
@@ -20,6 +22,7 @@ pub struct Connection {
     packet_processing: PacketProcessing,
     stage: Stage,
     mark_for_removal: bool,
+    player_data: PlayerData
 }
 
 impl Connection {
@@ -38,6 +41,7 @@ impl Connection {
                 },
                 stage: Stage::Handshake,
                 mark_for_removal: false,
+                player_data: PlayerData::default(),
             })),
             packet_sender: sender,
             server: handle,
