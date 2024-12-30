@@ -4,7 +4,7 @@ use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
 
-use super::PlayEvent;
+use super::ProtocolServerHandle;
 
 #[derive(Clone)]
 pub struct ServerHandle {
@@ -17,49 +17,14 @@ impl ServerHandle {
         self
     }
 
-    pub fn handshake_event(self, event: HandshakeEvent) -> Self {
-        self.inner.lock().unwrap().handshake_events.push(event);
+    pub(crate) fn low_level<F: FnOnce(ProtocolServerHandle) -> ProtocolServerHandle>(self, f: F) -> Self {
+        let handle = ProtocolServerHandle { inner: self.inner.clone() };
+        f(handle);
         self
     }
 
-    pub fn handshake_events(&self) -> Vec<HandshakeEvent> {
-        self.inner.lock().unwrap().handshake_events.clone()
-    }
-
-    pub fn status_event(self, event: StatusEvent) -> Self {
-        self.inner.lock().unwrap().status_events.push(event);
-        self
-    }
-
-    pub fn status_events(&self) -> Vec<StatusEvent> {
-        self.inner.lock().unwrap().status_events.clone()
-    }
-
-    pub fn login_event(self, event: LoginEvent) -> Self {
-        self.inner.lock().unwrap().login_events.push(event);
-        self
-    }
-
-    pub fn login_events(&self) -> Vec<LoginEvent> {
-        self.inner.lock().unwrap().login_events.clone()
-    }
-
-    pub fn configuration_event(self, event: ConfigEvent) -> Self {
-        self.inner.lock().unwrap().config_events.push(event);
-        self
-    }
-
-    pub fn configuration_events(&self) -> Vec<ConfigEvent> {
-        self.inner.lock().unwrap().config_events.clone()
-    }
-
-    pub fn play_event(self, event: PlayEvent) -> Self {
-        self.inner.lock().unwrap().play_events.push(event);
-        self
-    }
-
-    pub fn play_events(&self) -> Vec<PlayEvent> {
-        self.inner.lock().unwrap().play_events.clone()
+    pub(crate) fn get_low_level(&self) -> ProtocolServerHandle {
+        ProtocolServerHandle { inner: self.inner.clone() }
     }
 
     pub fn start<S: ToSocketAddrs>(self, address: S) {

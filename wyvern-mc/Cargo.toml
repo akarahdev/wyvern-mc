@@ -5,3 +5,6 @@ edition = "2024"
 
 [dependencies]
 voxidian-protocol = { path = "../../voxidian/protocol" }
+
+[features]
+protocol = []

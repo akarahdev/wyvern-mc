@@ -26,7 +26,7 @@ impl ConnectionHandle {
             Stage::Handshake => {
                 self.parse_packets(
                     |packet: C2SHandshakePackets, connection_handle: ConnectionHandle| {
-                        for event in self.server.handshake_events() {
+                        for event in self.server.get_low_level().handshake_events() {
                             event(&packet, connection_handle.clone())
                         }
                     },
@@ -35,7 +35,7 @@ impl ConnectionHandle {
             Stage::Status => {
                 self.parse_packets(
                     |packet: C2SStatusPackets, connection_handle: ConnectionHandle| {
-                        for event in self.server.status_events() {
+                        for event in self.server.get_low_level().status_events() {
                             event(&packet, connection_handle.clone());
                         }
                     }
@@ -44,7 +44,7 @@ impl ConnectionHandle {
             Stage::Login => {
                 self.parse_packets(
                     |packet: C2SLoginPackets, connection_handle: ConnectionHandle| {
-                        for event in self.server.login_events() {
+                        for event in self.server.get_low_level().login_events() {
                             event(&packet, connection_handle.clone());
                         }
                     }
@@ -53,7 +53,7 @@ impl ConnectionHandle {
             Stage::Config => {
                 self.parse_packets(
                     |packet: C2SConfigPackets, connection_handle: ConnectionHandle| {
-                        for event in self.server.configuration_events() {
+                        for event in self.server.get_low_level().configuration_events() {
                             event(&packet, connection_handle.clone());
                         }
                     }
@@ -62,7 +62,7 @@ impl ConnectionHandle {
             Stage::Play => {
                 self.parse_packets(
                     |packet: C2SPlayPackets, connection_handle: ConnectionHandle| {
-                        for event in self.server.play_events() {
+                        for event in self.server.get_low_level().play_events() {
                             event(&packet, connection_handle.clone());
                         }
                     }
