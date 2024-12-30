@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::plugin::Plugin;
-use crate::{connection, ServerHandle};
+use crate::ServerHandle;
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
@@ -77,7 +77,7 @@ impl Plugin for LoginProtocol {
                     },
                 );
                 connection.send_packet(LoginFinishedS2CLoginPacket {
-                    uuid: packet.uuid.clone(),
+                    uuid: packet.uuid,
                     username: packet.username.clone(),
                     props,
                 }).unwrap();
@@ -107,7 +107,7 @@ impl Plugin for LoginProtocol {
                     version: "1.21.4".to_string(),
                 });
                 connection.send_packet(SelectKnownPacksS2CConfigPacket {
-                    known_packs: known_packs,
+                    known_packs,
                 }).unwrap();
             }).configuration_event(|packet, _connection| {
                 println!("config packet: {:?}", packet);
@@ -241,9 +241,8 @@ impl Plugin for LoginProtocol {
                 }).unwrap();
     
                 
-            }).play_event(|packet, connection| {
+            }).play_event(|packet, _connection| {
                 println!("Play Packet: {:?}", packet);
-    
             }).play_event(|packet, connection| {
                 let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
                     return;
@@ -254,7 +253,7 @@ impl Plugin for LoginProtocol {
                 }
     
                 let connection = connection.protocol_handle();
-                
+
                 for chunk_x in -2..2 {
                     for chunk_z in -2..2 {
                         connection.send_packet(WorldChunkWithLightS2CPlayPacket {

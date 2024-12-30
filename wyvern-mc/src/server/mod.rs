@@ -20,6 +20,7 @@ pub struct Server {
 }
 
 impl Server {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new() -> ServerHandle {
         ServerHandle {
             inner: Arc::new(Mutex::new(Server::default()))

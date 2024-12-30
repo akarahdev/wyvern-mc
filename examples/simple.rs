@@ -1,6 +1,5 @@
 use std::net::SocketAddrV4;
 use std::str::FromStr;
-use voxidian_protocol::value::{BlockState, Identifier};
 use wyvern_mc::login::LoginProtocol;
 use wyvern_mc::Server;
 

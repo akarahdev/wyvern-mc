@@ -1,9 +1,7 @@
 use crate::{Connection, ServerHandle};
-use std::fmt::Debug;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
-use voxidian_protocol::packet::{EncodeError, PacketBuf, PacketEncode, PrefixedPacketEncode, Stage};
-use voxidian_protocol::value::VarInt;
+use voxidian_protocol::packet::PacketBuf;
 
 use super::protocol::ProtocolConnectionHandle;
 

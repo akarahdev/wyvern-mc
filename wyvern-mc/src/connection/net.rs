@@ -16,7 +16,7 @@ impl ProtocolConnectionHandle {
 
     pub fn marked_for_removal(&self) -> bool {
         let inner = self.inner.lock().unwrap();
-        *&inner.mark_for_removal
+        inner.mark_for_removal
     }
 
     pub fn handle_incoming_data(&self) {
@@ -85,7 +85,7 @@ impl ProtocolConnectionHandle {
         let bytes = inner
             .incoming_bytes
             .iter()
-            .map(|x| *x)
+            .copied()
             .collect::<Vec<_>>();
 
         match inner.packet_processing.decode_from_raw_queue(bytes.into_iter()) {
@@ -107,10 +107,7 @@ impl ProtocolConnectionHandle {
                     }
                 }
             }
-            Err(DecodeError::EndOfBuffer) => {
-                drop(inner);
-                return;
-            }
+            Err(DecodeError::EndOfBuffer) => {}
             Err(e) => {
                 panic!("{:?}", e);
             }

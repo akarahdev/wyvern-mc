@@ -1,4 +1,3 @@
-use crate::server::{ConfigEvent, HandshakeEvent, LoginEvent, StatusEvent};
 use crate::{Connection, Plugin, Server};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};

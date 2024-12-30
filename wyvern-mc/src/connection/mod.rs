@@ -23,6 +23,7 @@ pub struct Connection {
 }
 
 impl Connection {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(stream: TcpStream, handle: ServerHandle) -> ConnectionHandle {
         let (sender, recv) = channel();
         ConnectionHandle {
@@ -48,11 +49,11 @@ impl Connection {
 
         match self.stream.read(&mut buf) {
             Ok(bytes) => {
-                for idx in 0..bytes {
+                for item in buf.iter().take(bytes) {
                     let byte = self
                         .packet_processing
                         .secret_cipher
-                        .decrypt_u8(buf[idx])
+                        .decrypt_u8(*item)
                         .unwrap();
                     self.incoming_bytes.push_back(byte);
                 }
@@ -66,18 +67,13 @@ impl Connection {
     }
 
     pub(crate) fn handle_outgoing_data(&mut self) {
-        loop {
-            let Ok(buf) = self.packet_receiver.try_recv() else {
-                return;
-            };
-            match self.stream.write_all(buf.as_slice()) {
-                Ok(()) => {
-                    return;
-                }
-                Err(_e) => {
-                    self.packet_sender.send(buf).unwrap();
-                    return;
-                }
+        let Ok(buf) = self.packet_receiver.try_recv() else {
+            return;
+        };
+        match self.stream.write_all(buf.as_slice()) {
+            Ok(()) => {}
+            Err(_e) => {
+                self.packet_sender.send(buf).unwrap();
             }
         }
     }
