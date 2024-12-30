@@ -1,4 +1,5 @@
 pub mod plugin;
+pub mod values;
 
 pub(crate) mod connection;
 pub(crate) mod server;
