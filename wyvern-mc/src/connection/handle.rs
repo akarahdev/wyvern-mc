@@ -11,7 +11,7 @@ use super::protocol::RawConnection;
 
 #[derive(Clone)]
 pub struct Player {
-    pub(crate) inner: Arc<Mutex<ConnectionData>>,
+    pub(crate) inner: Arc<ConnectionData>,
     pub(crate) server: Server,
     pub(crate) packet_sender: Sender<PacketBuf>,
 }
@@ -26,15 +26,15 @@ impl Player {
     }
 
     pub fn set_dimension(&self, dim: Dimension) {
-        self.inner.lock().unwrap().player_data.dimension = Some(dim);
+        self.inner.player_data.lock().unwrap().dimension = Some(dim);
     }
 
     pub fn dimension(&self) -> Dimension {
-        self.inner.lock().unwrap().player_data.dimension.clone().unwrap()
+        self.inner.player_data.lock().unwrap().dimension.clone().unwrap()
     }
 
     pub fn location(&self) -> Location {
-        self.inner.lock().unwrap().player_data.last_position
+        self.inner.player_data.lock().unwrap().last_position
     }
 
     pub fn teleport(&self, location: Location) {

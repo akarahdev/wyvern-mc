@@ -1,5 +1,6 @@
 use crate::Player;
 use std::fmt::Debug;
+use std::sync::atomic::Ordering;
 use voxidian_protocol::packet::c2s::config::C2SConfigPackets;
 use voxidian_protocol::packet::c2s::handshake::C2SHandshakePackets;
 use voxidian_protocol::packet::c2s::login::C2SLoginPackets;
@@ -11,16 +12,16 @@ use super::protocol::RawConnection;
 
 impl RawConnection {
     pub fn mark_for_removal(&self) {
-        self.inner.lock().unwrap().mark_for_removal = true;
+        self.inner.mark_for_removal.store(true, Ordering::Release);
     }
 
     pub fn marked_for_removal(&self) -> bool {
-        let inner = self.inner.lock().unwrap();
-        inner.mark_for_removal
+        self.inner.mark_for_removal.load(Ordering::Acquire)
     }
 
     pub fn handle_incoming_data(&self) {
-        self.inner.lock().unwrap().handle_incoming_data();
+        self.inner.handle_incoming_data();
+
         let stage = self.get_stage();
 
         match stage {
@@ -72,29 +73,31 @@ impl RawConnection {
             _ => {}
         }
 
-        self.inner.lock().unwrap().handle_outgoing_data();
+        self.inner.handle_outgoing_data();
     }
 
     pub fn parse_packets<T: PrefixedPacketDecode + Debug, F: Fn(T, Player)>(&self, f: F) {
-        let mut inner = self.inner.lock().unwrap();
         let handle = self.clone();
+        let mut inc = self.inner.incoming_bytes.lock().unwrap();
 
-        let bytes = inner.incoming_bytes.iter().copied().collect::<Vec<_>>();
+        let bytes = inc.iter().copied().collect::<Vec<_>>();
 
-        match inner
+        match self.inner
             .packet_processing
+            .lock().unwrap()
             .decode_from_raw_queue(bytes.into_iter())
         {
             Ok((mut buf, consumed)) => {
                 if consumed == 0 {
                     return;
                 }
+                
                 for _ in 0..consumed {
-                    inner.incoming_bytes.pop_front();
+                    inc.remove(0);
                 }
                 match T::decode_prefixed(&mut buf) {
                     Ok(packet) => {
-                        drop(inner);
+                        drop(inc);
                         f(packet, handle.to_safe())
                     }
                     Err(DecodeError::EndOfBuffer) => {}

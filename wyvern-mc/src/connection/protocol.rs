@@ -14,7 +14,7 @@ use super::{ConnectionData, Player};
 
 #[derive(Clone)]
 pub struct RawConnection {
-    pub(crate) inner: Arc<Mutex<ConnectionData>>,
+    pub(crate) inner: Arc<ConnectionData>,
     pub(crate) server: Server,
     pub(crate) packet_sender: Sender<PacketBuf>,
 }
@@ -42,10 +42,11 @@ impl RawConnection {
     }
 
     pub fn get_stage(&self) -> Stage {
-        self.inner.lock().unwrap().stage
+        *self.inner.stage.lock().unwrap()
     }
 
     pub fn set_stage(&self, stage: Stage) {
-        self.inner.lock().unwrap().stage = stage;
+        let mut stage2 = self.inner.stage.lock().unwrap();
+        *stage2 = stage;
     }
 }

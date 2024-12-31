@@ -9,6 +9,7 @@ use crate::Server;
 use std::collections::VecDeque;
 use std::io::{ErrorKind, Read, Write};
 use std::net::TcpStream;
+use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
 use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
@@ -16,13 +17,13 @@ use voxidian_protocol::packet::{PacketBuf, Stage};
 
 pub struct ConnectionData {
     packet_sender: Sender<PacketBuf>,
-    packet_receiver: Receiver<PacketBuf>,
-    stream: TcpStream,
-    incoming_bytes: VecDeque<u8>,
-    packet_processing: PacketProcessing,
-    stage: Stage,
-    mark_for_removal: bool,
-    player_data: PlayerData
+    packet_receiver: Mutex<Receiver<PacketBuf>>,
+    stream: Mutex<TcpStream>,
+    incoming_bytes: Mutex<VecDeque<u8>>,
+    packet_processing: Mutex<PacketProcessing>,
+    stage: Mutex<Stage>,
+    mark_for_removal: AtomicBool,
+    player_data: Mutex<PlayerData>
 }
 
 impl ConnectionData {
@@ -30,36 +31,39 @@ impl ConnectionData {
     pub fn new(stream: TcpStream, handle: Server) -> Player {
         let (sender, recv) = channel();
         Player {
-            inner: Arc::new(Mutex::new(ConnectionData {
+            inner: Arc::new(ConnectionData {
                 packet_sender: sender.clone(),
-                packet_receiver: recv,
-                stream,
-                incoming_bytes: VecDeque::new(),
-                packet_processing: PacketProcessing {
+                packet_receiver: Mutex::new(recv),
+                stream: Mutex::new(stream),
+                incoming_bytes: Mutex::new(VecDeque::new()),
+                packet_processing: Mutex::new(PacketProcessing {
                     secret_cipher: SecretCipher::no_cipher(),
                     compression: CompressionMode::None,
-                },
-                stage: Stage::Handshake,
-                mark_for_removal: false,
-                player_data: PlayerData::default(),
-            })),
+                }),
+                stage: Mutex::new(Stage::Handshake),
+                mark_for_removal: AtomicBool::new(false),
+                player_data: Mutex::new(PlayerData::default()),
+            }),
             packet_sender: sender,
             server: handle,
         }
     }
 
-    pub(crate) fn handle_incoming_data(&mut self) {
-        let mut buf = [0u8; 256];
+    pub(crate) fn handle_incoming_data(&self) {
+        let mut buf = [0u8; 512];
 
-        match self.stream.read(&mut buf) {
+        let mut stream = self.stream.lock().unwrap();
+        let mut incoming_bytes = self.incoming_bytes.lock().unwrap();
+        let mut packet_processing  = self.packet_processing.lock().unwrap();
+
+        match stream.read(&mut buf) {
             Ok(bytes) => {
                 for item in buf.iter().take(bytes) {
-                    let byte = self
-                        .packet_processing
+                    let byte = packet_processing
                         .secret_cipher
                         .decrypt_u8(*item)
                         .unwrap();
-                    self.incoming_bytes.push_back(byte);
+                    incoming_bytes.push_back(byte);
                 }
             }
             Err(err) => match err.kind() {
@@ -70,11 +74,11 @@ impl ConnectionData {
         }
     }
 
-    pub(crate) fn handle_outgoing_data(&mut self) {
-        let Ok(buf) = self.packet_receiver.try_recv() else {
+    pub(crate) fn handle_outgoing_data(&self) {
+        let Ok(buf) = self.packet_receiver.lock().unwrap().try_recv() else {
             return;
         };
-        match self.stream.write_all(buf.as_slice()) {
+        match self.stream.lock().unwrap().write_all(buf.as_slice()) {
             Ok(()) => {}
             Err(_e) => {
                 self.packet_sender.send(buf).unwrap();
