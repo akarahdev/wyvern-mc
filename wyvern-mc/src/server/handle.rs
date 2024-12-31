@@ -1,4 +1,4 @@
-use crate::Connection;
+use crate::Player;
 use crate::{ConnectionData, ServerData, plugin::Plugin};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
@@ -56,17 +56,17 @@ impl Server {
                 .lock()
                 .unwrap()
                 .connections
-                .retain(|x| !x.protocol_handle().marked_for_removal());
+                .retain(|x| !x.raw_handle().marked_for_removal());
 
             let connections = self.inner.lock().unwrap().connections.clone();
 
             for connection in connections {
-                connection.protocol_handle().handle_incoming_data();
+                connection.raw_handle().handle_incoming_data();
             }
         }
     }
 
-    pub fn connections(&self) -> Vec<Connection> {
+    pub fn connections(&self) -> Vec<Player> {
         self.inner.lock().unwrap().connections.clone()
     }
 }

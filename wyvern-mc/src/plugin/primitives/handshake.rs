@@ -9,7 +9,7 @@ impl Plugin for HandshakePlugin {
         server.low_level(|server| {
             server.handshake_event(|packet, conn| {
                 let C2SHandshakePackets::Intention(packet) = packet;
-                let conn = conn.protocol_handle();
+                let conn = conn.raw_handle();
                 let stage = packet.intended_stage.into_stage();
                 println!("new stage: {:?}", stage);
                 match stage {

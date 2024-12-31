@@ -38,7 +38,7 @@ impl Plugin for ConfigurationPlugin {
                         return;
                     };
 
-                    let connection = connection.protocol_handle();
+                    let connection = connection.raw_handle();
 
                     let mut dim_type_registry = Registry::new();
                     dim_type_registry.insert(Identifier::new("minecraft", "oveworld"), DimType {
@@ -108,7 +108,7 @@ impl Plugin for ConfigurationPlugin {
                         return;
                     };
 
-                    let connection = connection.protocol_handle();
+                    let connection = connection.raw_handle();
 
                     connection.set_stage(Stage::Play);
 

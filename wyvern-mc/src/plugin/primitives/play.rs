@@ -27,7 +27,7 @@ impl Plugin for PlayPlugin {
                     for chunk_x in -2..2 {
                         for chunk_z in -2..2 {
                             let p = dim.get_chunk_as_packets(ChunkPosition::new(chunk_x, chunk_z));
-                            connection.protocol_handle().send_packet(p).unwrap();
+                            connection.raw_handle().send_packet(p).unwrap();
                         }
                     }
                 })

@@ -53,7 +53,7 @@ impl ChunkSection {
         self.blocks[y][z][x] = new_block;
 
         for conn in Server::get().connections() {
-            conn.protocol_handle().send_packet(BlockUpdateS2CPlayPacket {
+            conn.raw_handle().send_packet(BlockUpdateS2CPlayPacket {
                 pos: BlockPos::new(x as i32, y as i32, z as i32),
                 block: new_block,
             }).unwrap();

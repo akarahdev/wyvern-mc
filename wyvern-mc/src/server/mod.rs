@@ -4,14 +4,14 @@ pub use handle::*;
 mod protocol;
 pub use protocol::*;
 
-use crate::Connection;
+use crate::Player;
 use std::sync::{Arc, Mutex, OnceLock};
 
 pub static SERVER_INSTANCE: OnceLock<Server> = OnceLock::new();
 
 #[derive(Default)]
 pub struct ServerData {
-    connections: Vec<Connection>,
+    connections: Vec<Player>,
 
     handshake_events: Vec<HandshakeEvent>,
     status_events: Vec<StatusEvent>,

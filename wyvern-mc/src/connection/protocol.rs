@@ -10,18 +10,18 @@ use voxidian_protocol::{
 
 use crate::Server;
 
-use super::{ConnectionData, Connection};
+use super::{ConnectionData, Player};
 
 #[derive(Clone)]
-pub struct UnsafeConnection {
+pub struct RawConnection {
     pub(crate) inner: Arc<Mutex<ConnectionData>>,
     pub(crate) server: Server,
     pub(crate) packet_sender: Sender<PacketBuf>,
 }
 
-impl UnsafeConnection {
-    pub fn to_safe(&self) -> Connection {
-        Connection {
+impl RawConnection {
+    pub fn to_safe(&self) -> Player {
+        Player {
             inner: self.inner.clone(),
             server: self.server.clone(),
             packet_sender: self.packet_sender.clone(),

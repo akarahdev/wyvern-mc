@@ -19,7 +19,7 @@ impl Plugin for StatusPlugin {
             server.status_event(|packet, connection| match packet {
                 C2SStatusPackets::PingRequest(packet) => {
                     connection
-                        .protocol_handle()
+                        .raw_handle()
                         .send_packet(PongResponseS2CStatusPacket {
                             timestamp: packet.timestamp,
                         })
@@ -27,7 +27,7 @@ impl Plugin for StatusPlugin {
                 }
                 C2SStatusPackets::StatusRequest(_packet) => {
                     connection
-                        .protocol_handle()
+                        .raw_handle()
                         .send_packet(
                             StatusResponse {
                                 version: StatusResponseVersion {

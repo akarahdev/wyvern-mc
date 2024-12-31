@@ -27,9 +27,9 @@ pub struct ConnectionData {
 
 impl ConnectionData {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(stream: TcpStream, handle: Server) -> Connection {
+    pub fn new(stream: TcpStream, handle: Server) -> Player {
         let (sender, recv) = channel();
-        Connection {
+        Player {
             inner: Arc::new(Mutex::new(ConnectionData {
                 packet_sender: sender.clone(),
                 packet_receiver: recv,

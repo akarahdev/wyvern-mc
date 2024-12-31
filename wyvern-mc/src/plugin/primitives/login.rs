@@ -21,7 +21,7 @@ impl Plugin for LoginPlugin {
                 let C2SLoginPackets::Hello(packet) = packet else {
                     return;
                 };
-                let connection = connection.protocol_handle();
+                let connection = connection.raw_handle();
                 let mut props = LengthPrefixHashMap::<VarInt, String, LoginSuccessProperty>::new();
                 props.insert(
                     "textures".into(),
@@ -39,7 +39,7 @@ impl Plugin for LoginPlugin {
                 let C2SLoginPackets::LoginAcknowledged(_packet) = packet else {
                     return;
                 };
-                let connection = connection.protocol_handle();
+                let connection = connection.raw_handle();
                 connection.set_stage(Stage::Config);
                 let mut data = ConsumeAllVec::new();
                 data.extend("Wyvern-MC".bytes());

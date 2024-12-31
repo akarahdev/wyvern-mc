@@ -7,18 +7,18 @@ use voxidian_protocol::packet::s2c::play::{PlayerPositionS2CPlayPacket, Teleport
 use voxidian_protocol::packet::PacketBuf;
 use voxidian_protocol::value::VarInt;
 
-use super::protocol::UnsafeConnection;
+use super::protocol::RawConnection;
 
 #[derive(Clone)]
-pub struct Connection {
+pub struct Player {
     pub(crate) inner: Arc<Mutex<ConnectionData>>,
     pub(crate) server: Server,
     pub(crate) packet_sender: Sender<PacketBuf>,
 }
 
-impl Connection {
-    pub fn protocol_handle(&self) -> UnsafeConnection {
-        UnsafeConnection {
+impl Player {
+    pub fn raw_handle(&self) -> RawConnection {
+        RawConnection {
             inner: self.inner.clone(),
             server: self.server.clone(),
             packet_sender: self.packet_sender.clone(),
@@ -38,7 +38,7 @@ impl Connection {
     }
 
     pub fn teleport(&self, location: Location) {
-        self.protocol_handle().send_packet(PlayerPositionS2CPlayPacket {
+        self.raw_handle().send_packet(PlayerPositionS2CPlayPacket {
             teleport_id: VarInt::from(10),
             x: location.x,
             y: location.y,

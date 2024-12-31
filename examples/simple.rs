@@ -8,7 +8,7 @@ pub fn main() {
 
     Server::new()
         .low_level(|server| {
-            server.play_event(|packet, connection| {
+            server.play_event(|packet, player| {
                 let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
                     return;
                 };
@@ -27,8 +27,8 @@ pub fn main() {
                     }
                 }
 
-                connection.set_dimension(dim.clone());
-                connection.teleport(Location::new(0.0, 20.0, 0.0, 0.0, 0.0));
+                player.set_dimension(dim.clone());
+                player.teleport(Location::new(0.0, 20.0, 0.0, 0.0, 0.0));
             })
         })
         .add_plugin(Setup)
