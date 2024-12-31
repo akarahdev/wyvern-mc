@@ -1,4 +1,4 @@
-use std::{net::SocketAddrV4, time::Instant};
+use std::net::SocketAddrV4;
 use std::str::FromStr;
 
 use voxidian_protocol::packet::c2s::play::C2SPlayPackets;

@@ -5,11 +5,11 @@ mod block_state;
 pub use block_state::*;
 mod chunk;
 pub use chunk::*;
-use nohash_hasher::{BuildNoHashHasher, NoHashHasher};
+use nohash_hasher::BuildNoHashHasher;
 
 use std::collections::HashMap;
 
-use crate::values::{ChunkSectionPosition, Key};
+use crate::values::Key;
 
 pub struct DimensionData {
     name: Key<Dimension>,

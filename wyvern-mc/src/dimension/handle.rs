@@ -1,6 +1,6 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}, time::Instant};
+use std::{collections::HashMap, sync::{Arc, Mutex}};
 
-use nohash_hasher::{BuildNoHashHasher, NoHashHasher};
+use nohash_hasher::BuildNoHashHasher;
 use voxidian_protocol::{packet::s2c::play::LevelChunkWithLightS2CPlayPacket, value::{ChunkSectionData, Nbt, NbtCompound}};
 
 use crate::values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key};

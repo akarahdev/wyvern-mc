@@ -2,7 +2,7 @@ use crate::dimension::Dimension;
 use crate::values::Location;
 use crate::{ConnectionData, Server};
 use std::sync::mpsc::Sender;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use voxidian_protocol::packet::s2c::play::{PlayerPositionS2CPlayPacket, TeleportFlags};
 use voxidian_protocol::packet::PacketBuf;
 use voxidian_protocol::value::VarInt;

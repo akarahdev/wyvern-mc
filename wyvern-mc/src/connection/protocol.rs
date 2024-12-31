@@ -1,6 +1,6 @@
 use std::{
     fmt::Debug,
-    sync::{Arc, Mutex, mpsc::Sender},
+    sync::{Arc, mpsc::Sender},
 };
 
 use voxidian_protocol::{

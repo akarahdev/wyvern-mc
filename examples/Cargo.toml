@@ -10,6 +10,3 @@ voxidian-protocol = { path = "../../voxidian/protocol" }
 [[example]]
 name = "simple"
 path = "./simple.rs"
-
-[profile.release]
-debug = true
