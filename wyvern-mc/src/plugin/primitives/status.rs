@@ -9,12 +9,12 @@ use voxidian_protocol::{
     value::TextComponent,
 };
 
-use crate::plugin::Plugin;
+use crate::{plugin::Plugin, ServerBuilder};
 
 pub struct StatusPlugin;
 
 impl Plugin for StatusPlugin {
-    fn load(&self, server: crate::Server) {
+    fn load(&self, server: &ServerBuilder) {
         server.low_level(|server| {
             server.status_event(|packet, connection| match packet {
                 C2SStatusPackets::PingRequest(packet) => {

@@ -3,18 +3,17 @@ use voxidian_protocol::{
     value::VarInt,
 };
 
-use crate::{plugin::Plugin, values::ChunkPosition};
+use crate::{plugin::Plugin, values::ChunkPosition, ServerBuilder};
 
 pub struct PlayPlugin;
 
 impl Plugin for PlayPlugin {
-    fn load(&self, server: crate::Server) {
+    fn load(&self, server: &ServerBuilder) {
         server.low_level(|server| {
-            server
-                .play_event(|packet, _connection| {
+            server.play_event(|packet, _connection| {
                     println!("Play Packet: {:?}", packet);
-                })
-                .play_event(|packet, connection| {
+                });
+            server.play_event(|packet, connection| {
                     let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
                         return;
                     };
@@ -30,7 +29,7 @@ impl Plugin for PlayPlugin {
                             connection.raw_handle().send_packet(p).unwrap();
                         }
                     }
-                })
+                });
         });
     }
 }

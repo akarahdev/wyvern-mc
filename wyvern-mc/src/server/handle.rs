@@ -12,11 +12,6 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn add_plugin<P: Plugin>(self, plugin: P) -> Self {
-        plugin.load(self.clone());
-        self
-    }
-
     pub fn low_level<F: FnOnce(UnsafeServer) -> UnsafeServer>(
         self,
         f: F,
@@ -34,7 +29,7 @@ impl Server {
         }
     }
 
-    pub fn start<S: ToSocketAddrs>(self, address: S) {
+    pub(crate) fn start<S: ToSocketAddrs>(self, address: S) {
         let listener = TcpListener::bind(address).unwrap();
         listener
             .set_nonblocking(true)

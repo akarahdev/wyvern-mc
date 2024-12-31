@@ -10,12 +10,12 @@ use voxidian_protocol::{
     value::{ConsumeAllVec, Identifier, LengthPrefixHashMap, LengthPrefixVec, VarInt},
 };
 
-use crate::plugin::Plugin;
+use crate::{plugin::Plugin, ServerBuilder};
 
 pub struct LoginPlugin;
 
 impl Plugin for LoginPlugin {
-    fn load(&self, server: crate::Server) {
+    fn load(&self, server: &ServerBuilder) {
         server.low_level(|server| {
             server.login_event(|packet, connection| {
                 let C2SLoginPackets::Hello(packet) = packet else {
@@ -35,7 +35,8 @@ impl Plugin for LoginPlugin {
                     username: packet.username.clone(),
                     props,
                 }).unwrap();
-            }).login_event(|packet, connection| {
+            });
+            server.login_event(|packet, connection| {
                 let C2SLoginPackets::LoginAcknowledged(_packet) = packet else {
                     return;
                 };
@@ -61,7 +62,7 @@ impl Plugin for LoginPlugin {
                 connection.send_packet(SelectKnownPacksS2CConfigPacket {
                     known_packs,
                 }).unwrap();
-            })
+            });
         });
     }
 }

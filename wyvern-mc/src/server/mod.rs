@@ -1,8 +1,10 @@
 mod handle;
 pub use handle::*;
-
 mod protocol;
 pub use protocol::*;
+mod builder;
+pub use builder::*;
+
 use voxidian_protocol::value::BlockState;
 
 use crate::Player;
@@ -28,20 +30,14 @@ impl Server {
 
 
     #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> Server {
+    pub fn new() -> ServerBuilder {
         // cache block state registry ahead of time
         BlockState::from_id(0).unwrap();
         
-        let s = Server {
+        let server = Server {
             inner: Arc::new(Mutex::new(ServerData::default())),
         };
-        let _ = SERVER_INSTANCE.set(s.clone());
-        s
-    }
-}
-
-impl Default for Server {
-    fn default() -> Self {
-        Self::new()
+        let _ = SERVER_INSTANCE.set(server.clone());
+        ServerBuilder { server }
     }
 }

@@ -1,11 +1,11 @@
 use voxidian_protocol::packet::{Stage, c2s::handshake::C2SHandshakePackets};
 
-use crate::plugin::Plugin;
+use crate::{plugin::Plugin, ServerBuilder};
 
 pub struct HandshakePlugin;
 
 impl Plugin for HandshakePlugin {
-    fn load(&self, server: crate::Server) {
+    fn load(&self, server: &ServerBuilder) {
         server.low_level(|server| {
             server.handshake_event(|packet, conn| {
                 let C2SHandshakePackets::Intention(packet) = packet;
@@ -19,7 +19,7 @@ impl Plugin for HandshakePlugin {
                     }
                     stage => conn.set_stage(stage),
                 };
-            })
+            });
         });
     }
 }
