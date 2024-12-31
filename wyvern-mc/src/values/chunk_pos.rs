@@ -22,4 +22,8 @@ impl ChunkSectionPosition {
     pub fn new(x: i32, y: i32, z: i32) -> ChunkSectionPosition {
         ChunkSectionPosition { x, y, z }
     }
+
+    pub fn map_numeric_hash(&self) -> u64 {
+        ((self.x as u64 & 0x3FFFFFF) << 38) | ((self.z as u64 & 0x3FFFFFF) << 12) | (self.y as u64 & 0xFFF)
+    }
 }

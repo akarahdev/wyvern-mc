@@ -67,9 +67,6 @@ impl ChunkSection {
             for z in 0..16 {
                 for x in 0..16 {
                     arr[idx] = self.blocks[y][z][x];
-                    if arr[idx].id() != 0 {
-                        println!("idx: {:?}", arr[idx])
-                    }
                     idx += 1;
                 }
             }

@@ -4,6 +4,7 @@ version = "0.0.0"
 edition = "2024"
 
 [dependencies]
+nohash-hasher = "0.2.0"
 voxidian-protocol = { path = "../../voxidian/protocol" }
 
 [features]

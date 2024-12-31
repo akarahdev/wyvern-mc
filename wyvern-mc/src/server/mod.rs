@@ -3,6 +3,7 @@ pub use handle::*;
 
 mod protocol;
 pub use protocol::*;
+use voxidian_protocol::value::BlockState;
 
 use crate::Player;
 use std::sync::{Arc, Mutex, OnceLock};
@@ -28,6 +29,9 @@ impl Server {
 
     #[allow(clippy::new_ret_no_self)]
     pub fn new() -> Server {
+        // cache block state registry ahead of time
+        BlockState::from_id(0).unwrap();
+        
         let s = Server {
             inner: Arc::new(Mutex::new(ServerData::default())),
         };

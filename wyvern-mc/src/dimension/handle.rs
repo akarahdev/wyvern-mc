@@ -1,5 +1,6 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{collections::HashMap, sync::{Arc, Mutex}, time::Instant};
 
+use nohash_hasher::{BuildNoHashHasher, NoHashHasher};
 use voxidian_protocol::{packet::s2c::play::WorldChunkWithLightS2CPlayPacket, value::{ChunkSectionData, Nbt, NbtCompound}};
 
 use crate::values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key};
@@ -16,7 +17,7 @@ impl Dimension {
         Dimension {
             inner: Arc::new(Mutex::new(DimensionData { 
                 name, 
-                chunk_sections: HashMap::new(),
+                chunk_sections: HashMap::with_hasher(BuildNoHashHasher::new()),
                 min_y: 0,
                 max_y: 16
             }))
@@ -39,11 +40,12 @@ impl Dimension {
                     let mut sections = Vec::new();
                     for chunk_y in (inner.min_y..inner.max_y).step_by(16) {
                         let cp = ChunkSectionPosition::new(cp.x, chunk_y, cp.z);
-                        let chunk = match inner.chunk_sections.get_mut(&cp) {
+                        let nh = cp.map_numeric_hash();
+                        let chunk = match inner.chunk_sections.get_mut(&nh) {
                             Some(chunk) => chunk,
                             None => {
-                                inner.chunk_sections.insert(cp, ChunkSection::default());
-                                inner.chunk_sections.get_mut(&cp).unwrap()
+                                inner.chunk_sections.insert(nh, ChunkSection::default());
+                                inner.chunk_sections.get_mut(&nh).unwrap()
                             },
                         };
                         sections.push(chunk.to_packet());
@@ -64,14 +66,14 @@ impl Dimension {
     pub fn set_block(&mut self, location: BlockPosition, block: BlockState) {
         let mut inner = self.inner.lock().unwrap();
 
-        let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos()) {
+        let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos().map_numeric_hash()) {
             Some(chunk) => chunk,
             None => {
                 inner.chunk_sections.insert(
-                    location.to_chunk_section_pos(), 
+                    location.to_chunk_section_pos().map_numeric_hash(), 
                     ChunkSection::default()
                 );
-                inner.chunk_sections.get_mut(&location.to_chunk_section_pos()).unwrap()
+                inner.chunk_sections.get_mut(&location.to_chunk_section_pos().map_numeric_hash()).unwrap()
             },
         };
 
@@ -81,14 +83,14 @@ impl Dimension {
     pub fn get_block(&mut self, location: BlockPosition) -> BlockState {
         let mut inner = self.inner.lock().unwrap();
 
-        let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos()) {
+        let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos().map_numeric_hash()) {
             Some(chunk) => chunk,
             None => {
                 inner.chunk_sections.insert(
-                    location.to_chunk_section_pos(), 
+                    location.to_chunk_section_pos().map_numeric_hash(), 
                     ChunkSection::default()
                 );
-                inner.chunk_sections.get_mut(&location.to_chunk_section_pos()).unwrap()
+                inner.chunk_sections.get_mut(&location.to_chunk_section_pos().map_numeric_hash()).unwrap()
             },
         };
 
