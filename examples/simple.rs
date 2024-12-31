@@ -16,7 +16,6 @@ pub fn main() {
                     return;
                 }
 
-                
                 let mut dim = Dimension::new(Key::new("player", "world"));
                 let block = BlockState::new(Key::new("minecraft", "andesite"));
                 

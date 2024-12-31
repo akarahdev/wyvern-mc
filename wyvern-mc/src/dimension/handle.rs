@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::{Arc, Mutex}, time::Instant};
 
 use nohash_hasher::{BuildNoHashHasher, NoHashHasher};
-use voxidian_protocol::{packet::s2c::play::WorldChunkWithLightS2CPlayPacket, value::{ChunkSectionData, Nbt, NbtCompound}};
+use voxidian_protocol::{packet::s2c::play::LevelChunkWithLightS2CPlayPacket, value::{ChunkSectionData, Nbt, NbtCompound}};
 
 use crate::values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key};
 
@@ -28,10 +28,10 @@ impl Dimension {
         self.inner.lock().unwrap().name.clone()
     }
 
-    pub(crate) fn get_chunk_as_packets(&self, cp: ChunkPosition) -> WorldChunkWithLightS2CPlayPacket {
+    pub(crate) fn get_chunk_as_packets(&self, cp: ChunkPosition) -> LevelChunkWithLightS2CPlayPacket {
         let mut inner = self.inner.lock().unwrap();
 
-        WorldChunkWithLightS2CPlayPacket {
+        LevelChunkWithLightS2CPlayPacket {
             chunk_x: cp.x,
             chunk_z: cp.z,
             heightmaps: Nbt { name: "".to_string(), root: NbtCompound::new() },
