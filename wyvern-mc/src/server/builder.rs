@@ -1,6 +1,6 @@
 use std::net::ToSocketAddrs;
 
-use crate::plugin::Plugin;
+use crate::{plugin::Plugin, scheduler::Scheduler};
 
 use super::{ConfigEvent, HandshakeEvent, LoginEvent, PlayEvent, Server, StatusEvent};
 
@@ -25,6 +25,8 @@ impl ServerBuilder {
     }
 
     pub fn start<S: ToSocketAddrs>(self, addr: S) {
+        let (_, receiver) = Scheduler::initialize();
+        self.server.inner.lock().unwrap().task_receiver.set(receiver).unwrap();
         self.server.start(addr);
     }
 }

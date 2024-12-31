@@ -1,7 +1,8 @@
-use std::net::SocketAddrV4;
+use std::{net::SocketAddrV4, time::Duration};
 use std::str::FromStr;
 
 use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
+use wyvern_mc::scheduler::Scheduler;
 use wyvern_mc::{dimension::{BlockState, Dimension}, plugin::Setup, values::{BlockPosition, Key, Location}, Server};
 
 pub fn main() {
@@ -29,10 +30,6 @@ pub fn main() {
                     
                 }
             }
-            
-            
-
-            
 
             player.set_dimension(dim.clone());
             player.teleport(Location::new(0.0, 20.0, 0.0, 0.0, 0.0));

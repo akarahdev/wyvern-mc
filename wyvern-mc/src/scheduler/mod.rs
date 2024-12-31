@@ -4,15 +4,16 @@ mod into_task;
 
 use std::sync::{mpsc::{channel, Receiver, Sender}, OnceLock};
 
+use into_task::IntoTask;
 pub use tasks::*;
 
 static GLOBAL_SCHEDULER: OnceLock<Scheduler> = OnceLock::new();
 
 pub struct Scheduler {
     /// Tasks that are ran whenever possible
-    persistent_tasks: OnceLock<Vec<StoredTask>>,
+    pub(crate) persistent_tasks: OnceLock<Vec<StoredTask>>,
     /// Tasks needed to be ran only once
-    task_sender: Sender<StoredTask>
+    pub(crate) task_sender: Sender<StoredTask>
 }
 
 impl Scheduler {
@@ -29,5 +30,9 @@ impl Scheduler {
 
     pub fn get() -> &'static Scheduler {
         GLOBAL_SCHEDULER.get().unwrap()
+    }
+
+    pub fn spawn<F: IntoTask>(f: F) {
+        let _ = Scheduler::get().task_sender.send(Box::new(f.into_task()));
     }
 }

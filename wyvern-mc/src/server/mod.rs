@@ -7,8 +7,8 @@ pub use builder::*;
 
 use voxidian_protocol::value::BlockState;
 
-use crate::Player;
-use std::sync::{Arc, Mutex, OnceLock};
+use crate::{scheduler::StoredTask, Player};
+use std::{cell::OnceCell, sync::{mpsc::Receiver, Arc, Mutex, OnceLock}};
 
 pub static SERVER_INSTANCE: OnceLock<Server> = OnceLock::new();
 
@@ -21,13 +21,14 @@ pub struct ServerData {
     login_events: Vec<LoginEvent>,
     config_events: Vec<ConfigEvent>,
     play_events: Vec<PlayEvent>,
+
+    task_receiver: OnceCell<Receiver<StoredTask>>
 }
 
 impl Server {
     pub fn get() -> Server {
         SERVER_INSTANCE.get().unwrap().clone()
     }
-
 
     #[allow(clippy::new_ret_no_self)]
     pub fn new() -> ServerBuilder {
@@ -39,5 +40,11 @@ impl Server {
         };
         let _ = SERVER_INSTANCE.set(server.clone());
         ServerBuilder { server }
+    }
+}
+
+impl ServerData {
+    pub fn task_receiver(&self) -> &Receiver<StoredTask> {
+        self.task_receiver.get().unwrap()
     }
 }

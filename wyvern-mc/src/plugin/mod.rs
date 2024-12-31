@@ -5,7 +5,7 @@ use primitives::{
     play::PlayPlugin, status::StatusPlugin,
 };
 
-use crate::{Server, ServerBuilder};
+use crate::ServerBuilder;
 
 pub trait Plugin {
     fn load(&self, server: &ServerBuilder);

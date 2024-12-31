@@ -46,8 +46,8 @@ impl Player {
             vx: 0.0,
             vy: 0.0,
             vz: 0.0,
-            adyaw_deg: 0.0,
-            adpitch_deg: 0.0,
+            adyaw_deg: location.pitch,
+            adpitch_deg: location.yaw,
             flags: TeleportFlags {
                 relative_x: false,
                 relative_y: false,

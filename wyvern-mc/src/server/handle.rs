@@ -1,5 +1,5 @@
 use crate::Player;
-use crate::{ConnectionData, ServerData, plugin::Plugin};
+use crate::{ConnectionData, ServerData};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
@@ -47,6 +47,7 @@ impl Server {
                 Err(e) if e.kind() == ErrorKind::WouldBlock => {}
                 Err(e) => panic!("{:?}", e),
             }
+            
             self.inner
                 .lock()
                 .unwrap()
@@ -54,9 +55,17 @@ impl Server {
                 .retain(|x| !x.raw_handle().marked_for_removal());
 
             let connections = self.inner.lock().unwrap().connections.clone();
-
             for connection in connections {
                 connection.raw_handle().handle_incoming_data();
+            }
+
+            
+            let inner = self.inner.lock().unwrap();
+            if let Ok(mut task) = inner.task_receiver().try_recv() {
+                drop(inner);
+                std::thread::spawn(move || {
+                    task.run();
+                });
             }
         }
     }
