@@ -1,8 +1,8 @@
-use std::{collections::HashMap, sync::{Arc, Mutex, MutexGuard}};
+use std::{collections::HashMap, sync::{Arc, Mutex}};
 
-use voxidian_protocol::{packet::s2c::play::{BlockUpdateS2CPlayPacket, WorldChunkWithLightS2CPlayPacket}, registry::RegEntry, value::{BlockPos, BlockState as ProtocolBlockState, ChunkSectionData, Nbt, NbtCompound}};
+use voxidian_protocol::{packet::s2c::play::WorldChunkWithLightS2CPlayPacket, value::{ChunkSectionData, Nbt, NbtCompound}};
 
-use crate::{values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key, Location}, Server};
+use crate::values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key};
 
 use super::{BlockState, ChunkSection, DimensionData};
 
@@ -31,8 +31,8 @@ impl Dimension {
         let mut inner = self.inner.lock().unwrap();
 
         WorldChunkWithLightS2CPlayPacket {
-            chunk_x: cp.x as i32,
-            chunk_z: cp.z as i32,
+            chunk_x: cp.x,
+            chunk_z: cp.z,
             heightmaps: Nbt { name: "".to_string(), root: NbtCompound::new() },
             data: ChunkSectionData {
                 sections: {

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod plugin;
 pub mod values;
 pub mod dimension;

@@ -3,7 +3,7 @@ use voxidian_protocol::{
     value::VarInt,
 };
 
-use crate::{plugin::Plugin, values::{BlockPosition, ChunkPosition}};
+use crate::{plugin::Plugin, values::ChunkPosition};
 
 pub struct PlayPlugin;
 

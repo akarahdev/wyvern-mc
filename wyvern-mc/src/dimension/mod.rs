@@ -8,7 +8,7 @@ pub use chunk::*;
 
 use std::collections::HashMap;
 
-use crate::values::{BlockPosition, ChunkSectionPosition, Key};
+use crate::values::{ChunkSectionPosition, Key};
 
 pub struct DimensionData {
     name: Key<Dimension>,

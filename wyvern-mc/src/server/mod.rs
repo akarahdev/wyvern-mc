@@ -35,3 +35,9 @@ impl Server {
         s
     }
 }
+
+impl Default for Server {
+    fn default() -> Self {
+        Self::new()
+    }
+}
