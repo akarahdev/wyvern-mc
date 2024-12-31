@@ -1,6 +1,7 @@
 mod tasks;
 mod functions;
 mod into_task;
+mod parameters;
 
 use std::sync::{mpsc::{channel, Receiver, Sender}, OnceLock};
 
@@ -32,7 +33,7 @@ impl Scheduler {
         GLOBAL_SCHEDULER.get().unwrap()
     }
 
-    pub fn spawn<F: IntoTask>(f: F) {
+    pub fn spawn<I, F: IntoTask<I>>(f: F) {
         let _ = Scheduler::get().task_sender.send(Box::new(f.into_task()));
     }
 }
