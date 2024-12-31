@@ -3,7 +3,7 @@ use voxidian_protocol::{
     value::VarInt,
 };
 
-use crate::{plugin::Plugin, values::BlockPosition};
+use crate::{plugin::Plugin, values::{BlockPosition, ChunkPosition}};
 
 pub struct PlayPlugin;
 
@@ -26,7 +26,7 @@ impl Plugin for PlayPlugin {
                     let dim = connection.dimension();
                     for chunk_x in -2..2 {
                         for chunk_z in -2..2 {
-                            let p = dim.get_chunk_as_packets(BlockPosition::new(chunk_x, 0, chunk_z));
+                            let p = dim.get_chunk_as_packets(ChunkPosition::new(chunk_x, chunk_z));
                             connection.protocol_handle().send_packet(p).unwrap();
                         }
                     }

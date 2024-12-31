@@ -1,8 +1,8 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{collections::HashMap, sync::{Arc, Mutex, MutexGuard}};
 
 use voxidian_protocol::{packet::s2c::play::{BlockUpdateS2CPlayPacket, WorldChunkWithLightS2CPlayPacket}, registry::RegEntry, value::{BlockPos, BlockState as ProtocolBlockState, ChunkSectionData, Nbt, NbtCompound}};
 
-use crate::{values::{BlockPosition, Key, Location, Position}, Server};
+use crate::{values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key, Location}, Server};
 
 use super::{BlockState, ChunkSection, DimensionData};
 
@@ -27,18 +27,18 @@ impl Dimension {
         self.inner.lock().unwrap().name.clone()
     }
 
-    pub(crate) fn get_chunk_as_packets(&self, cp: BlockPosition) -> WorldChunkWithLightS2CPlayPacket {
+    pub(crate) fn get_chunk_as_packets(&self, cp: ChunkPosition) -> WorldChunkWithLightS2CPlayPacket {
         let mut inner = self.inner.lock().unwrap();
 
         WorldChunkWithLightS2CPlayPacket {
-            chunk_x: cp.x() as i32,
-            chunk_z: cp.z() as i32,
+            chunk_x: cp.x as i32,
+            chunk_z: cp.z as i32,
             heightmaps: Nbt { name: "".to_string(), root: NbtCompound::new() },
             data: ChunkSectionData {
                 sections: {
                     let mut sections = Vec::new();
                     for chunk_y in (inner.min_y..inner.max_y).step_by(16) {
-                        let cp = BlockPosition::new(cp.x() as i32, chunk_y, cp.z() as i32);
+                        let cp = ChunkSectionPosition::new(cp.x, chunk_y, cp.z);
                         let chunk = match inner.chunk_sections.get_mut(&cp) {
                             Some(chunk) => chunk,
                             None => {
@@ -61,52 +61,41 @@ impl Dimension {
         }
     }
 
-    pub fn set_block(&mut self, location: Location, block: BlockState) {
-        let centered = location.center();
-        let bp = BlockPosition::new(centered.x().floor() as i32, centered.y().floor() as i32, centered.z().floor() as i32);
-        let cp = BlockPosition::new(bp.x() as i32 / 16, bp.y() as i32 / 16, bp.z() as i32 / 16);
+    pub fn set_block(&mut self, location: BlockPosition, block: BlockState) {
         let mut inner = self.inner.lock().unwrap();
-        let chunk = match inner.chunk_sections.get_mut(&cp) {
+
+        let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos()) {
             Some(chunk) => chunk,
             None => {
-                inner.chunk_sections.insert(cp, ChunkSection::default());
-                inner.chunk_sections.get_mut(&cp).unwrap()
+                inner.chunk_sections.insert(
+                    location.to_chunk_section_pos(), 
+                    ChunkSection::default()
+                );
+                inner.chunk_sections.get_mut(&location.to_chunk_section_pos()).unwrap()
             },
         };
-        let rg = unsafe { RegEntry::new_unchecked(block.to_protocol().to_id().unwrap() as usize) };
-        let cbp = BlockPosition::new(bp.x() as i32 % 16, bp.y() as i32 % 16, bp.z() as i32 % 16);
-        let old_rg = chunk.blocks[cbp.y() as usize][cbp.z() as usize][cbp.x() as usize];
-        chunk.blocks[cbp.y() as usize][cbp.z() as usize][cbp.x() as usize] = rg;
 
-        if rg.id() == 0 && rg.id() != old_rg.id() {
-            chunk.block_count -= 1;
-        }
-        if rg.id() != 0 && old_rg.id() == 0 {
-            chunk.block_count += 1;
-        }
-        for conn in Server::get().connections() {
-            conn.protocol_handle().send_packet(BlockUpdateS2CPlayPacket {
-                pos: BlockPos::new(centered.x().floor() as i32, centered.y().floor() as i32, centered.z().floor() as i32),
-                block: rg,
-            }).unwrap();
-        }
+        chunk.set_block_at(location.x as usize % 15, location.y as usize % 15, location.z as usize % 15, block);
     }
 
-    pub fn get_block(&mut self, location: Location) -> BlockState {
-        let centered = location.center();
-        let bp = BlockPosition::new(centered.x().floor() as i32, centered.y().floor() as i32, centered.z().floor() as i32);
-        let cp = BlockPosition::new(bp.x() as i32 / 16, bp.y() as i32 / 16, bp.z() as i32 / 16);
+    pub fn get_block(&mut self, location: BlockPosition) -> BlockState {
         let mut inner = self.inner.lock().unwrap();
-        let chunk = match inner.chunk_sections.get_mut(&cp) {
+
+        let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos()) {
             Some(chunk) => chunk,
             None => {
-                inner.chunk_sections.insert(cp, ChunkSection::default());
-                inner.chunk_sections.get_mut(&cp).unwrap()
+                inner.chunk_sections.insert(
+                    location.to_chunk_section_pos(), 
+                    ChunkSection::default()
+                );
+                inner.chunk_sections.get_mut(&location.to_chunk_section_pos()).unwrap()
             },
         };
-        let cbp = BlockPosition::new(bp.x() as i32 % 16, bp.y() as i32 % 16, bp.z() as i32 % 16);
+
         BlockState::from_protocol(
-            ProtocolBlockState::from_id(chunk.blocks[cbp.y() as usize][cbp.z() as usize][cbp.x() as usize].id() as i32).unwrap()
+            voxidian_protocol::value::BlockState::from_id(
+                chunk.block_at(location.x as usize % 15, location.y as usize % 15, location.z as usize % 15).id() as i32
+            ).unwrap()
         )
     }
 }

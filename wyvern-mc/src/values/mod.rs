@@ -6,8 +6,5 @@ mod key;
 pub use key::*;
 mod block_pos;
 pub use block_pos::*;
-pub trait Position {
-    fn x(&self) -> f64;
-    fn y(&self) -> f64;
-    fn z(&self) -> f64;
-}
+mod chunk_pos;
+pub use chunk_pos::*;

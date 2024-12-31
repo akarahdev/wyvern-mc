@@ -4,8 +4,10 @@ use voxidian_protocol::value::{BlockState as ProtocolBlockState, Identifier};
 
 use crate::values::Key;
 
+#[derive(Debug, Clone)]
 pub struct Block;
 
+#[derive(Debug, Clone)]
 pub struct BlockState {
     block_id: Key<Block>,
     properties: HashMap<String, String>

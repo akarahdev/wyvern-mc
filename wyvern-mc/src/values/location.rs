@@ -1,26 +1,10 @@
-use super::Position;
-
 #[derive(Debug, Clone, Copy)]
 pub struct Location {
-    x: f64,
-    y: f64,
-    z: f64,
-    pitch: f32,
-    yaw: f32,
-}
-
-impl Position for Location {
-    fn x(&self) -> f64 {
-        self.x
-    }
-
-    fn y(&self) -> f64 {
-        self.y
-    }
-
-    fn z(&self) -> f64 {
-        self.z
-    }
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub pitch: f32,
+    pub yaw: f32,
 }
 
 impl Location {
@@ -34,11 +18,11 @@ impl Location {
         }
     }
 
-    pub fn shift_by<P: Position>(&self, other: P) -> Location {
+    pub fn shift_by(&self, other: Location) -> Location {
         Location {
-            x: self.x + other.x(),
-            y: self.y + other.y(),
-            z: self.z + other.z(),
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
             pitch: self.pitch,
             yaw: self.yaw
         }

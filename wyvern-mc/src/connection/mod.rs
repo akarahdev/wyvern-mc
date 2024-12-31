@@ -1,9 +1,9 @@
 mod handle;
 mod net;
+use data::PlayerData;
 pub use handle::*;
 pub mod protocol;
 mod data;
-pub use data::*;
 
 use crate::Server;
 use std::collections::VecDeque;

@@ -1,5 +1,5 @@
 use crate::dimension::Dimension;
-use crate::values::{Location, Position};
+use crate::values::Location;
 use crate::{ConnectionData, Server};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -40,9 +40,9 @@ impl Connection {
     pub fn teleport(&self, location: Location) {
         self.protocol_handle().send_packet(PlayerPositionS2CPlayPacket {
             teleport_id: VarInt::from(10),
-            x: location.x(),
-            y: location.y(),
-            z: location.z(),
+            x: location.x,
+            y: location.y,
+            z: location.z,
             vx: 0.0,
             vy: 0.0,
             vz: 0.0,

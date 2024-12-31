@@ -1,25 +1,10 @@
-use voxidian_protocol::value::BlockPos;
+use super::{ChunkPosition, ChunkSectionPosition};
 
-use super::Position;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BlockPosition {
-    x: i32,
-    y: i32,
-    z: i32
-}
-
-impl Position for BlockPosition {
-    fn x(&self) -> f64 {
-        self.x as f64
-    }
-
-    fn y(&self) -> f64 {
-        self.y as f64
-    }
-
-    fn z(&self) -> f64 {
-        self.z as f64
-    }
+    pub x: i32,
+    pub y: i32,
+    pub z: i32
 }
 
 impl BlockPosition {
@@ -27,7 +12,18 @@ impl BlockPosition {
         BlockPosition { x, y, z }
     }
 
-    pub fn from_position<P: Position>(p: P) -> BlockPosition {
-        BlockPosition { x: p.x().floor() as i32, y: p.y().floor() as i32, z: p.z().floor() as i32 }
+    pub fn to_chunk_pos(&self) -> ChunkPosition {
+        ChunkPosition {
+            x: self.x / 16,
+            z: self.z / 16
+        }
+    }
+
+    pub fn to_chunk_section_pos(&self) -> ChunkSectionPosition {
+        ChunkSectionPosition {
+            x: self.x / 16,
+            y: self.y / 16,
+            z: self.z / 16
+        }
     }
 }

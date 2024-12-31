@@ -5,7 +5,7 @@ mod protocol;
 pub use protocol::*;
 
 use crate::Connection;
-use std::{cell::LazyCell, sync::{Arc, LazyLock, Mutex, OnceLock}};
+use std::sync::{Arc, Mutex, OnceLock};
 
 pub static SERVER_INSTANCE: OnceLock<Server> = OnceLock::new();
 
