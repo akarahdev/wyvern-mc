@@ -8,7 +8,7 @@ use crate::{plugin::Plugin, values::ChunkPosition, ServerBuilder};
 pub struct PlayPlugin;
 
 impl Plugin for PlayPlugin {
-    fn load(&self, server: &ServerBuilder) {
+    fn load(&self, server: &mut ServerBuilder) {
         server.low_level(|server| {
             server.play_event(|packet, _connection| {
                     println!("Play Packet: {:?}", packet);

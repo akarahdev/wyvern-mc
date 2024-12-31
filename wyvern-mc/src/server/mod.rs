@@ -39,7 +39,7 @@ impl Server {
             inner: Arc::new(Mutex::new(ServerData::default())),
         };
         let _ = SERVER_INSTANCE.set(server.clone());
-        ServerBuilder { server }
+        ServerBuilder { server, persistent_tasks: Vec::new() }
     }
 }
 

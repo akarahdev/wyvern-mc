@@ -1,7 +1,9 @@
+use crate::scheduler::Scheduler;
 use crate::Player;
 use crate::{ConnectionData, ServerData};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
 use super::UnsafeServer;
@@ -59,13 +61,21 @@ impl Server {
                 connection.raw_handle().handle_incoming_data();
             }
 
-            
-            let inner = self.inner.lock().unwrap();
-            if let Ok(mut task) = inner.task_receiver().try_recv() {
-                drop(inner);
-                std::thread::spawn(move || {
+            {
+                let inner = self.inner.lock().unwrap();
+                if let Ok(mut task) = inner.task_receiver().try_recv() {
+                    drop(inner);
+                    std::thread::spawn(move || {
+                        task.run();
+                    });
+                }
+            }
+
+            {
+                let mut tasks = Scheduler::get().persistent_tasks.lock().unwrap();
+                for task in tasks.deref_mut() {
                     task.run();
-                });
+                }
             }
         }
     }

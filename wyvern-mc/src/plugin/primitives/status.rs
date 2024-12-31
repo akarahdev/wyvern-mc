@@ -14,7 +14,7 @@ use crate::{plugin::Plugin, ServerBuilder};
 pub struct StatusPlugin;
 
 impl Plugin for StatusPlugin {
-    fn load(&self, server: &ServerBuilder) {
+    fn load(&self, server: &mut ServerBuilder) {
         server.low_level(|server| {
             server.status_event(|packet, connection| match packet {
                 C2SStatusPackets::PingRequest(packet) => {

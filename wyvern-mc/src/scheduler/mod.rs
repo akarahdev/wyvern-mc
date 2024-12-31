@@ -1,18 +1,18 @@
 mod tasks;
-mod functions;
-mod into_task;
-mod parameters;
+pub mod functions;
+pub mod into_task;
+pub mod parameters;
 
-use std::sync::{mpsc::{channel, Receiver, Sender}, OnceLock};
+use std::sync::{mpsc::{channel, Receiver, Sender}, Mutex, OnceLock};
 
 use into_task::IntoTask;
 pub use tasks::*;
 
-static GLOBAL_SCHEDULER: OnceLock<Scheduler> = OnceLock::new();
+pub(crate) static GLOBAL_SCHEDULER: OnceLock<Scheduler> = OnceLock::new();
 
 pub struct Scheduler {
     /// Tasks that are ran whenever possible
-    pub(crate) persistent_tasks: OnceLock<Vec<StoredTask>>,
+    pub(crate) persistent_tasks: Mutex<Vec<StoredTask>>,
     /// Tasks needed to be ran only once
     pub(crate) task_sender: Sender<StoredTask>
 }
@@ -22,7 +22,7 @@ impl Scheduler {
         let (task_sender, task_receiver) = channel();
         let _ = GLOBAL_SCHEDULER.set(
             Scheduler {
-                persistent_tasks: OnceLock::new(),
+                persistent_tasks: Mutex::new(Vec::new()),
                 task_sender,
             }
         );

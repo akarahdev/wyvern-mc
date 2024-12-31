@@ -5,7 +5,8 @@ use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
 use wyvern_mc::{dimension::{BlockState, Dimension}, plugin::Setup, scheduler::Scheduler, values::{BlockPosition, Key, Location}, Server};
 
 pub fn main() {
-    let server = Server::new();
+    let mut server = Server::new();
+    server.add_system(on_loop);
     server.low_level(|server| {
         server.play_event(|packet, player| {
             let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
@@ -36,4 +37,8 @@ pub fn main() {
     });
     server.add_plugin(Setup);
     server.start(SocketAddrV4::from_str("127.0.0.1:25565").unwrap());
+}
+
+fn on_loop() {
+    println!("Looping!");
 }

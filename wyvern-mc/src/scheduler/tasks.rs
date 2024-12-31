@@ -6,13 +6,13 @@ pub trait Task: Send + Sync + 'static {
     fn run(&mut self);
 }
 
-impl<F: FnMut() + Send + Sync + 'static> Task for FunctionTask<(), F> {
+impl<F: Fn() + Send + Sync + 'static> Task for FunctionTask<(), F> {
     fn run(&mut self) {
         (self.function)()
     }
 }
 
-impl<F: FnMut(T1) + Send + Sync + 'static, 
+impl<F: Fn(T1) + Send + Sync + 'static, 
     T1: TaskParameter + 'static> 
     Task for FunctionTask<(T1,), F> {
     fn run(&mut self) {
@@ -20,7 +20,7 @@ impl<F: FnMut(T1) + Send + Sync + 'static,
     }
 }
 
-impl<F: FnMut(T1, T2) + Send + Sync + 'static, 
+impl<F: Fn(T1, T2) + Send + Sync + 'static, 
     T1: TaskParameter + 'static,
     T2: TaskParameter + 'static> 
     Task for FunctionTask<(T1, T2), F> {

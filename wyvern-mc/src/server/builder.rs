@@ -1,15 +1,21 @@
 use std::net::ToSocketAddrs;
 
-use crate::{plugin::Plugin, scheduler::Scheduler};
+use crate::{plugin::Plugin, scheduler::{into_task::IntoTask, parameters::TaskParameter, Scheduler, StoredTask}};
 
 use super::{ConfigEvent, HandshakeEvent, LoginEvent, PlayEvent, Server, StatusEvent};
 
 pub struct ServerBuilder {
-    pub(crate) server: Server
+    pub(crate) server: Server,
+    pub(crate) persistent_tasks: Vec<StoredTask>
 }
 
 impl ServerBuilder {
-    pub fn add_plugin<P: Plugin>(&self, plugin: P) -> &Self {
+    pub fn add_system<I: TaskParameter, S: IntoTask<I>>(&mut self, task: S) -> &Self {
+        self.persistent_tasks.push(Box::new(task.into_task()));
+        self
+    }
+
+    pub fn add_plugin<P: Plugin>(&mut self, plugin: P) -> &mut Self {
         plugin.load(self);
         self
     }
@@ -27,6 +33,9 @@ impl ServerBuilder {
     pub fn start<S: ToSocketAddrs>(self, addr: S) {
         let (_, receiver) = Scheduler::initialize();
         self.server.inner.lock().unwrap().task_receiver.set(receiver).unwrap();
+        let mut rf = Scheduler::get().persistent_tasks.lock().unwrap();
+        *rf = self.persistent_tasks;
+        drop(rf);
         self.server.start(addr);
     }
 }

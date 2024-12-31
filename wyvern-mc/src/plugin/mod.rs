@@ -8,13 +8,13 @@ use primitives::{
 use crate::ServerBuilder;
 
 pub trait Plugin {
-    fn load(&self, server: &ServerBuilder);
+    fn load(&self, server: &mut ServerBuilder);
 }
 
 pub struct Setup;
 
 impl Plugin for Setup {
-    fn load(&self, server: &ServerBuilder) {
+    fn load(&self, server: &mut ServerBuilder) {
         server
             .add_plugin(HandshakePlugin)
             .add_plugin(LoginPlugin)
