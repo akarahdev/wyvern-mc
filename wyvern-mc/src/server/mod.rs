@@ -5,7 +5,9 @@ mod protocol;
 pub use protocol::*;
 
 use crate::Connection;
-use std::sync::{Arc, Mutex};
+use std::{cell::LazyCell, sync::{Arc, LazyLock, Mutex, OnceLock}};
+
+pub static SERVER_INSTANCE: OnceLock<Server> = OnceLock::new();
 
 #[derive(Default)]
 pub struct ServerData {
@@ -19,10 +21,17 @@ pub struct ServerData {
 }
 
 impl Server {
+    pub fn get() -> Server {
+        SERVER_INSTANCE.get().unwrap().clone()
+    }
+
+
     #[allow(clippy::new_ret_no_self)]
     pub fn new() -> Server {
-        Server {
+        let s = Server {
             inner: Arc::new(Mutex::new(ServerData::default())),
-        }
+        };
+        let _ = SERVER_INSTANCE.set(s.clone());
+        s
     }
 }

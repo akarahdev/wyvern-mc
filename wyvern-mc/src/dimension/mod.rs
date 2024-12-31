@@ -1,16 +1,22 @@
 mod handle;
+pub use handle::*;
+mod block_state;
+pub use block_state::*;
+mod chunk;
+pub use chunk::*;
+
 use std::collections::HashMap;
 
-pub use handle::*;
-
-use crate::values::{Key, Vector};
+use crate::values::{Key, BlockPosition};
 
 pub struct DimensionRegistry {
     dimensions: HashMap<Key<Dimension>, Dimension>
 }
 
-
 pub struct DimensionData {
     name: Key<Dimension>,
-    blocks: HashMap<Vector, () /* todo: block state value */>
+    chunk_sections: HashMap<BlockPosition, ChunkSection>,
+
+    min_y: i32,
+    max_y: i32
 }

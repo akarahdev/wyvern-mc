@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 #[derive(Debug, Clone)]
 pub struct Key<T> {
-    namespace: String,
-    path: String,
+    pub(crate) namespace: String,
+    pub(crate) path: String,
     _phantom: PhantomData<T>
 }
 

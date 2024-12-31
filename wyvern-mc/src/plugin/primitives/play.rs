@@ -1,16 +1,9 @@
 use voxidian_protocol::{
-    packet::{
-        c2s::play::C2SPlayPackets,
-        s2c::play::{BlockUpdateS2CPlayPacket, WorldChunkWithLightS2CPlayPacket},
-    },
-    registry::RegEntry,
-    value::{
-        BlockPos, ChunkSection, ChunkSectionData, LengthPrefixVec, Nbt, NbtCompound, PaletteFormat,
-        PalettedContainer, VarInt,
-    },
+    packet::c2s::play::C2SPlayPackets,
+    value::VarInt,
 };
 
-use crate::plugin::Plugin;
+use crate::{plugin::Plugin, values::BlockPosition};
 
 pub struct PlayPlugin;
 
@@ -30,77 +23,13 @@ impl Plugin for PlayPlugin {
                         return;
                     }
 
-                    let connection = connection.protocol_handle();
-
+                    let dim = connection.dimension();
                     for chunk_x in -2..2 {
                         for chunk_z in -2..2 {
-                            connection
-                                .send_packet(WorldChunkWithLightS2CPlayPacket {
-                                    chunk_x,
-                                    chunk_z,
-                                    heightmaps: Nbt {
-                                        name: "".to_string(),
-                                        root: NbtCompound::new(),
-                                    },
-                                    data: ChunkSectionData {
-                                        sections: vec![ChunkSection {
-                                            block_count: 0,
-                                            block_states: PalettedContainer {
-                                                bits_per_entry: 0,
-                                                format: PaletteFormat::SingleValued {
-                                                    entry: unsafe { RegEntry::new_unchecked(0) },
-                                                },
-                                            },
-                                            biomes: PalettedContainer {
-                                                bits_per_entry: 0,
-                                                format: PaletteFormat::SingleValued {
-                                                    entry: unsafe { RegEntry::new_unchecked(0) },
-                                                },
-                                            },
-                                        }],
-                                    },
-                                    block_entities: LengthPrefixVec::new(),
-                                    sky_light_mask: LengthPrefixVec::new(),
-                                    block_light_mask: LengthPrefixVec::new(),
-                                    empty_sky_light_mask: LengthPrefixVec::new(),
-                                    empty_block_light_mask: LengthPrefixVec::new(),
-                                    sky_light_array: LengthPrefixVec::new(),
-                                    block_light_array: LengthPrefixVec::new(),
-                                })
-                                .unwrap();
+                            let p = dim.get_chunk_as_packets(BlockPosition::new(chunk_x, 0, chunk_z));
+                            connection.protocol_handle().send_packet(p).unwrap();
                         }
                     }
-
-                    connection
-                        .send_packet(BlockUpdateS2CPlayPacket {
-                            pos: BlockPos::new(8, 5, 8),
-                            block: unsafe { RegEntry::new_unchecked(3) },
-                        })
-                        .unwrap();
-                    connection
-                        .send_packet(BlockUpdateS2CPlayPacket {
-                            pos: BlockPos::new(8, 5, 11),
-                            block: unsafe { RegEntry::new_unchecked(4) },
-                        })
-                        .unwrap();
-                    connection
-                        .send_packet(BlockUpdateS2CPlayPacket {
-                            pos: BlockPos::new(10, 5, 14),
-                            block: unsafe { RegEntry::new_unchecked(5) },
-                        })
-                        .unwrap();
-                    connection
-                        .send_packet(BlockUpdateS2CPlayPacket {
-                            pos: BlockPos::new(10, 5, 17),
-                            block: unsafe { RegEntry::new_unchecked(5) },
-                        })
-                        .unwrap();
-                    connection
-                        .send_packet(BlockUpdateS2CPlayPacket {
-                            pos: BlockPos::new(7, 5, 18),
-                            block: unsafe { RegEntry::new_unchecked(5) },
-                        })
-                        .unwrap();
                 })
         });
     }

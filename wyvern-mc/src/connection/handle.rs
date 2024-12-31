@@ -1,3 +1,4 @@
+use crate::dimension::Dimension;
 use crate::values::{Location, Position};
 use crate::{ConnectionData, Server};
 use std::sync::mpsc::Sender;
@@ -22,6 +23,14 @@ impl Connection {
             server: self.server.clone(),
             packet_sender: self.packet_sender.clone(),
         }
+    }
+
+    pub fn set_dimension(&self, dim: Dimension) {
+        self.inner.lock().unwrap().player_data.dimension = Some(dim);
+    }
+
+    pub fn dimension(&self) -> Dimension {
+        self.inner.lock().unwrap().player_data.dimension.clone().unwrap()
     }
 
     pub fn location(&self) -> Location {

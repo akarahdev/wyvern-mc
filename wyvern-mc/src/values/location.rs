@@ -46,9 +46,9 @@ impl Location {
 
     pub fn center(&self) -> Location {
         Location {
-            x: self.x.round(),
-            y: self.y.floor(),
-            z: self.z.floor(),
+            x: self.x.floor() + 0.5,
+            y: self.y.floor() + 0.5,
+            z: self.z.floor() + 0.5,
             pitch: 0.0,
             yaw: 0.0,
         }

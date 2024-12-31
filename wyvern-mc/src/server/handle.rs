@@ -1,3 +1,4 @@
+use crate::Connection;
 use crate::{ConnectionData, ServerData, plugin::Plugin};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
@@ -16,7 +17,7 @@ impl Server {
         self
     }
 
-    pub(crate) fn low_level<F: FnOnce(UnsafeServer) -> UnsafeServer>(
+    pub fn low_level<F: FnOnce(UnsafeServer) -> UnsafeServer>(
         self,
         f: F,
     ) -> Self {
@@ -27,7 +28,7 @@ impl Server {
         self
     }
 
-    pub(crate) fn get_low_level(&self) -> UnsafeServer {
+    pub fn get_low_level(&self) -> UnsafeServer {
         UnsafeServer {
             inner: self.inner.clone(),
         }
@@ -63,5 +64,9 @@ impl Server {
                 connection.protocol_handle().handle_incoming_data();
             }
         }
+    }
+
+    pub fn connections(&self) -> Vec<Connection> {
+        self.inner.lock().unwrap().connections.clone()
     }
 }
