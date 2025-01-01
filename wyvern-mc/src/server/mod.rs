@@ -7,22 +7,24 @@ pub use builder::*;
 
 use voxidian_protocol::value::BlockState;
 
-use crate::{scheduler::StoredTask, Player};
-use std::{cell::OnceCell, sync::{mpsc::Receiver, Arc, Mutex, OnceLock}};
+use crate::{dimension::Dimension, scheduler::StoredTask, values::Key, Player};
+use std::{cell::OnceCell, collections::HashMap, sync::{mpsc::Receiver, Arc, Mutex, OnceLock}};
 
 pub static SERVER_INSTANCE: OnceLock<Server> = OnceLock::new();
 
 #[derive(Default)]
 pub struct ServerData {
-    connections: Vec<Player>,
+    pub(crate) connections: Vec<Player>,
 
-    handshake_events: Vec<HandshakeEvent>,
-    status_events: Vec<StatusEvent>,
-    login_events: Vec<LoginEvent>,
-    config_events: Vec<ConfigEvent>,
-    play_events: Vec<PlayEvent>,
+    pub(crate) handshake_events: Vec<HandshakeEvent>,
+    pub(crate) status_events: Vec<StatusEvent>,
+    pub(crate) login_events: Vec<LoginEvent>,
+    pub(crate) config_events: Vec<ConfigEvent>,
+    pub(crate) play_events: Vec<PlayEvent>,
 
-    task_receiver: OnceCell<Receiver<StoredTask>>
+    pub(crate) task_receiver: OnceCell<Receiver<StoredTask>>,
+
+    pub(crate) dimensions: HashMap<Key<Dimension>, Dimension>
 }
 
 impl Server {

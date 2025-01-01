@@ -40,6 +40,11 @@ fn on_connect(
         wool.clone()
     );
 
+    dim.set_block(
+        BlockPosition::new(6, 3,  9), 
+        wool.clone()
+    );
+
     player.set_dimension(dim);
     player.teleport(Location::new(0.0, 1.0, 0.0, 0.0, 0.0));
 }

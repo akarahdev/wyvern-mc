@@ -1,9 +1,9 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{collections::HashMap, hash::{Hash, Hasher}, sync::{Arc, Mutex}};
 
 use nohash_hasher::BuildNoHashHasher;
 use voxidian_protocol::{packet::s2c::play::LevelChunkWithLightS2CPlayPacket, value::{ChunkSectionData, Nbt, NbtCompound}};
 
-use crate::values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key};
+use crate::{values::{BlockPosition, ChunkPosition, ChunkSectionPosition, Key}, Server};
 
 use super::{BlockState, ChunkSection, DimensionData};
 
@@ -14,14 +14,17 @@ pub struct Dimension {
 
 impl Dimension {
     pub fn new(name: Key<Dimension>) -> Dimension {
-        Dimension {
+        
+        let dim = Dimension {
             inner: Arc::new(Mutex::new(DimensionData { 
-                name, 
+                name: name.clone(), 
                 chunk_sections: HashMap::with_hasher(BuildNoHashHasher::new()),
                 min_y: 0,
                 max_y: 16
             }))
-        }
+        };
+        Server::get().inner.lock().unwrap().dimensions.insert(name.clone(), dim.clone());
+        dim
     }
 
     pub fn name(&self) -> Key<Dimension> {
@@ -101,3 +104,17 @@ impl Dimension {
         )
     }
 }
+
+impl Hash for Dimension {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.inner.lock().unwrap().name.hash(state);
+    }
+}
+
+impl PartialEq for Dimension {
+    fn eq(&self, other: &Self) -> bool {
+        self.inner.lock().unwrap().name == other.inner.lock().unwrap().name
+    }
+}
+
+impl Eq for Dimension {}

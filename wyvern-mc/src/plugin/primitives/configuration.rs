@@ -17,7 +17,7 @@ use voxidian_protocol::{
     },
 };
 
-use crate::{plugin::Plugin, ServerBuilder};
+use crate::{plugin::Plugin, Server, ServerBuilder};
 
 pub struct ConfigurationPlugin;
 
@@ -54,13 +54,14 @@ impl Plugin for ConfigurationPlugin {
                     logical_height: 16,
                     height: 16,
                     infiniburn: "#minecraft:infiniburn_overworld".to_string(),
-                    effects: DimEffects::Nether,
+                    effects: DimEffects::Overworld,
                     ambient_light: 15.0,
                     piglin_safe: false,
                     has_raids: true,
                     monster_spawn_light_level: DimMonsterSpawnLightLevel::Constant(1),
                     monster_spawn_block_light_limit: 1,
                 });
+            
 
                 let mut wolf_variant = Registry::new();
                 wolf_variant.insert(Identifier::new("minecraft", "pale"), WolfVariant {
