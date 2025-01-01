@@ -40,4 +40,11 @@ impl Scheduler {
     pub fn spawn<I, F: IntoTask<I>>(f: F) {
         let _ = Scheduler::get().task_sender.send(Box::new(f.into_task()));
     }
+
+    pub fn run_systems_with_map(data: &TypeMap) {
+        let mut tasks = Scheduler::get().persistent_tasks.lock().unwrap();
+        for task in tasks.iter_mut() {
+            task.run(&data);
+        }
+    }
 }

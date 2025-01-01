@@ -1,8 +1,7 @@
 pub mod primitives;
 
 use primitives::{
-    configuration::ConfigurationPlugin, handshake::HandshakePlugin, login::LoginPlugin,
-    play::PlayPlugin, status::StatusPlugin,
+    configuration::ConfigurationPlugin, event_dispatcher::EventDispatcher, handshake::HandshakePlugin, login::LoginPlugin, play::PlayPlugin, status::StatusPlugin
 };
 
 use crate::ServerBuilder;
@@ -16,6 +15,7 @@ pub struct Setup;
 impl Plugin for Setup {
     fn load(&self, server: &mut ServerBuilder) {
         server
+            .add_plugin(EventDispatcher)
             .add_plugin(HandshakePlugin)
             .add_plugin(LoginPlugin)
             .add_plugin(StatusPlugin)

@@ -45,3 +45,18 @@ impl<
         }
     }
 }
+
+impl<
+    F: Fn(T1, T2, T3) + Send + Sync + 'static,
+    T1: TaskParameter + 'static,
+    T2: TaskParameter + 'static,
+    T3: TaskParameter + 'static> IntoTask<(T1, T2, T3)> for F {
+    type TaskType = FunctionTask<(T1, T2, T3), F>;
+
+    fn into_task(self) -> Self::TaskType {
+        FunctionTask {
+            function: self,
+            marker: PhantomData
+        }
+    }
+}

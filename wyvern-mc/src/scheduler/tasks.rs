@@ -31,3 +31,14 @@ impl<F: Fn(T1, T2) + Send + Sync + 'static,
             Some(())
         }
 }
+
+impl<F: Fn(T1, T2, T3) + Send + Sync + 'static, 
+    T1: TaskParameter + 'static,
+    T2: TaskParameter + 'static,
+    T3: TaskParameter + 'static> 
+    Task for FunctionTask<(T1, T2, T3), F> {
+        fn run(&mut self, data: &TypeMap) -> Option<()> {
+            (self.function)(T1::fetch(data)?, T2::fetch(data)?, T3::fetch(data)?);
+            Some(())
+        }
+}

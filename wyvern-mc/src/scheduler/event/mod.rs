@@ -1,12 +1,20 @@
 use std::ops::Deref;
 
 use crate::{dimension::Dimension, values::{BlockPosition, Location}, Player};
-
 use super::{parameters::TaskParameter, TypeMap};
+
+mod all_events;
+pub use all_events::*;
 
 #[derive(Clone)]
 pub struct Event<E: EventFetcher> {
     event: E
+}
+
+impl<E: EventFetcher> Event<E> {
+    pub fn new(event: E) -> Self {
+        Event { event }
+    }
 }
 
 impl<E: EventFetcher> Deref for Event<E> {
@@ -17,25 +25,12 @@ impl<E: EventFetcher> Deref for Event<E> {
     }
 }
 
-pub trait EventFetcher: Clone + Sized {
-    fn from_data(map: TypeMap) -> Option<Self>;
-}
-
-#[derive(Clone)]
-pub struct ConnectEvent;
-impl EventFetcher for ConnectEvent {
+pub trait EventFetcher: Clone + Sized + 'static {
     fn from_data(map: TypeMap) -> Option<Self> {
-        Some(ConnectEvent)
+        map.get().cloned()
     }
 }
 
-#[derive(Clone)]
-pub struct MoveEvent;
-impl EventFetcher for MoveEvent {
-    fn from_data(map: TypeMap) -> Option<Self> {
-        Some(MoveEvent)
-    }
-}
 
 
 

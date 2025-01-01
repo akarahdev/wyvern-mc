@@ -16,14 +16,14 @@ use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, S
 use voxidian_protocol::packet::{PacketBuf, Stage};
 
 pub struct ConnectionData {
-    packet_sender: Sender<PacketBuf>,
-    packet_receiver: Mutex<Receiver<PacketBuf>>,
-    stream: Mutex<TcpStream>,
-    incoming_bytes: Mutex<VecDeque<u8>>,
-    packet_processing: Mutex<PacketProcessing>,
-    stage: Mutex<Stage>,
-    mark_for_removal: AtomicBool,
-    player_data: Mutex<PlayerData>
+    pub(crate) packet_sender: Sender<PacketBuf>,
+    pub(crate) packet_receiver: Mutex<Receiver<PacketBuf>>,
+    pub(crate) stream: Mutex<TcpStream>,
+    pub(crate) incoming_bytes: Mutex<VecDeque<u8>>,
+    pub(crate) packet_processing: Mutex<PacketProcessing>,
+    pub(crate) stage: Mutex<Stage>,
+    pub(crate) mark_for_removal: AtomicBool,
+    pub(crate) player_data: PlayerData
 }
 
 impl ConnectionData {
@@ -42,7 +42,7 @@ impl ConnectionData {
                 }),
                 stage: Mutex::new(Stage::Handshake),
                 mark_for_removal: AtomicBool::new(false),
-                player_data: Mutex::new(PlayerData::default()),
+                player_data: PlayerData::default(),
             }),
             packet_sender: sender,
             server: handle,

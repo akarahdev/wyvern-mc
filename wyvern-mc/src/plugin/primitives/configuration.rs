@@ -127,7 +127,7 @@ impl Plugin for ConfigurationPlugin {
                         dim: unsafe { RegEntry::new_unchecked(0) },
                         dim_name: Identifier::new("minecraft", "overworld"),
                         seed: 0,
-                        gamemode: Gamemode::Creative,
+                        gamemode: Gamemode::Survival,
                         old_gamemode: Gamemode::None,
                         is_debug: false,
                         is_flat: false,
