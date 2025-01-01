@@ -7,7 +7,7 @@ use wyvern_mc::{dimension::{BlockState, Dimension}, plugin::Setup, scheduler::{E
 pub fn main() {
     let mut server = Server::new();
     server.add_system(on_loop);
-    server.add_system(with_connection);
+    server.add_system(on_move);
     server.low_level(|server| {
         server.play_event(|packet, player| {
             let C2SPlayPackets::AcceptTeleportation(packet) = packet else {

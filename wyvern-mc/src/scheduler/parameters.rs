@@ -1,4 +1,4 @@
-use super::{EventParameter, Param, TypeMap};
+use super::TypeMap;
 
 pub trait TaskParameter: Sized {
     fn fetch(data: &TypeMap) -> Option<Self>;

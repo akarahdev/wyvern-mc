@@ -1,9 +1,8 @@
-use crate::scheduler::{Param, Scheduler, TypeMap};
+use crate::scheduler::TypeMap;
 use crate::Player;
 use crate::{ConnectionData, ServerData};
 use std::io::ErrorKind;
 use std::net::{TcpListener, ToSocketAddrs};
-use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
 use super::UnsafeServer;
