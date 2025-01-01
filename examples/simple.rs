@@ -1,12 +1,13 @@
 use std::net::SocketAddrV4;
 use std::str::FromStr;
 
-use voxidian_protocol::packet::c2s::play::C2SPlayPackets;
-use wyvern_mc::{dimension::{BlockState, Dimension}, plugin::Setup, scheduler::Scheduler, values::{BlockPosition, Key, Location}, Server};
+use voxidian_protocol::{packet::c2s::play::C2SPlayPackets, value::BlockPos};
+use wyvern_mc::{dimension::{BlockState, Dimension}, plugin::Setup, scheduler::{Event, MoveEvent, Param, Scheduler}, values::{BlockPosition, Key, Location}, Player, Server};
 
 pub fn main() {
     let mut server = Server::new();
     server.add_system(on_loop);
+    server.add_system(with_connection);
     server.low_level(|server| {
         server.play_event(|packet, player| {
             let C2SPlayPackets::AcceptTeleportation(packet) = packet else {
@@ -41,4 +42,11 @@ pub fn main() {
 
 fn on_loop() {
     println!("Looping!");
+}
+
+fn on_move(
+    _event: Event<MoveEvent>,
+    new_location: Param<Location>
+) {
+    println!("A player moved to {:?}", new_location.center());
 }

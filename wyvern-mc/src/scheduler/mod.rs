@@ -1,4 +1,6 @@
 mod tasks;
+mod event;
+mod type_map;
 pub mod functions;
 pub mod into_task;
 pub mod parameters;
@@ -7,6 +9,8 @@ use std::sync::{mpsc::{channel, Receiver, Sender}, Mutex, OnceLock};
 
 use into_task::IntoTask;
 pub use tasks::*;
+pub use event::*;
+pub use type_map::*;
 
 pub(crate) static GLOBAL_SCHEDULER: OnceLock<Scheduler> = OnceLock::new();
 

@@ -1,4 +1,4 @@
-use crate::scheduler::Scheduler;
+use crate::scheduler::{Param, Scheduler, TypeMap};
 use crate::Player;
 use crate::{ConnectionData, ServerData};
 use std::io::ErrorKind;
@@ -57,25 +57,17 @@ impl Server {
                 .retain(|x| !x.raw_handle().marked_for_removal());
 
             let connections = self.inner.lock().unwrap().connections.clone();
+
             for connection in connections {
                 connection.raw_handle().handle_incoming_data();
             }
 
-            {
-                let inner = self.inner.lock().unwrap();
-                if let Ok(mut task) = inner.task_receiver().try_recv() {
-                    drop(inner);
-                    std::thread::spawn(move || {
-                        task.run();
-                    });
-                }
-            }
-
-            {
-                let mut tasks = Scheduler::get().persistent_tasks.lock().unwrap();
-                for task in tasks.deref_mut() {
-                    task.run();
-                }
+            let inner = self.inner.lock().unwrap();
+            if let Ok(mut task) = inner.task_receiver().try_recv() {
+                drop(inner);
+                std::thread::spawn(move || {
+                    task.run(&TypeMap::new());
+                });
             }
         }
     }
