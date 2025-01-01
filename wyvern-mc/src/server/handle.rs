@@ -1,4 +1,4 @@
-use crate::scheduler::TypeMap;
+use crate::scheduler::{Event, Scheduler, ServerStartEvent, TypeMap};
 use crate::Player;
 use crate::{ConnectionData, ServerData};
 use std::io::ErrorKind;
@@ -35,6 +35,13 @@ impl Server {
         listener
             .set_nonblocking(true)
             .expect("must be able to do non-blocking IO to run server");
+
+        {
+            let mut data = TypeMap::new();
+            data.insert(Event::new(ServerStartEvent));
+            Scheduler::run_systems_with_map(&data);
+        }
+
         loop {
             match listener.accept() {
                 Ok(conn) => {

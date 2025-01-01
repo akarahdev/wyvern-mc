@@ -66,7 +66,7 @@ impl Dimension {
         }
     }
 
-    pub fn set_block(&mut self, location: BlockPosition, block: BlockState) {
+    pub fn set_block(&self, location: BlockPosition, block: BlockState) {
         let mut inner = self.inner.lock().unwrap();
 
         let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos().map_numeric_hash()) {
@@ -83,7 +83,7 @@ impl Dimension {
         chunk.set_block_at(location.x as usize % 15, location.y as usize % 15, location.z as usize % 15, block);
     }
 
-    pub fn get_block(&mut self, location: BlockPosition) -> BlockState {
+    pub fn get_block(&self, location: BlockPosition) -> BlockState {
         let mut inner = self.inner.lock().unwrap();
 
         let chunk = match inner.chunk_sections.get_mut(&location.to_chunk_section_pos().map_numeric_hash()) {

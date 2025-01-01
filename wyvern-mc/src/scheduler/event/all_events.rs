@@ -1,5 +1,8 @@
 use super::EventFetcher;
 
+#[derive(Clone)]
+pub struct ServerStartEvent;
+impl EventFetcher for ServerStartEvent {}
 
 #[derive(Clone)]
 pub struct ConnectEvent;
