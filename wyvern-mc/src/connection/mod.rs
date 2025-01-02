@@ -75,13 +75,16 @@ impl ConnectionData {
     }
 
     pub(crate) fn handle_outgoing_data(&self) {
-        let Ok(buf) = self.packet_receiver.lock().unwrap().try_recv() else {
-            return;
-        };
-        match self.stream.lock().unwrap().write_all(buf.as_slice()) {
-            Ok(()) => {}
-            Err(_e) => {
-                self.packet_sender.send(buf).unwrap();
+        loop {
+            let Ok(buf) = self.packet_receiver.lock().unwrap().try_recv() else {
+                return;
+            };
+            match self.stream.lock().unwrap().write_all(buf.as_slice()) {
+                Ok(()) => {}
+                Err(_e) => {
+                    self.packet_sender.send(buf).unwrap();
+                    break;
+                }
             }
         }
     }

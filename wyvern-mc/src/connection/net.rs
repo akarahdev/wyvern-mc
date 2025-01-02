@@ -23,7 +23,7 @@ impl RawConnection {
         self.inner.handle_incoming_data();
 
         let stage = self.get_stage();
-
+        
         match stage {
             Stage::Handshake => {
                 self.parse_packets(
