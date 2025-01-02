@@ -40,23 +40,29 @@ impl ChunkSection {
         assert!(y <= 15);
         assert!(z <= 15);
 
-        let original_block = self.block_at(x, y, z);
+        let original_block = self.blocks[y][z][x];
         let new_block = unsafe { RegEntry::new_unchecked(state.to_protocol().to_id().unwrap() as usize) };
+
+        println!("old block: {:?}", original_block);
+        self.blocks[y][z][x] = new_block;
+        println!("new block: {:?}", new_block);
+
+
         
+        for conn in Server::get().connections() {
+            if original_block.id() != new_block.id() {
+                conn.raw_handle().send_packet(BlockUpdateS2CPlayPacket {
+                    pos: BlockPos::new(x as i32, y as i32, z as i32),
+                    block: new_block,
+                }).unwrap();
+            }
+        }
+
         if original_block.id() != 0 && new_block.id() == 0 {
             self.block_count -= 1;
         }
         if new_block.id() != 0 && original_block.id() != new_block.id() {
             self.block_count += 1;
-        }
-
-        self.blocks[y][z][x] = new_block;
-
-        for conn in Server::get().connections() {
-            conn.raw_handle().send_packet(BlockUpdateS2CPlayPacket {
-                pos: BlockPos::new(x as i32, y as i32, z as i32),
-                block: new_block,
-            }).unwrap();
         }
     }
 

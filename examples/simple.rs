@@ -1,8 +1,7 @@
-use std::sync::Mutex;
 use std::{net::SocketAddrV4, sync::LazyLock};
 use std::str::FromStr;
 
-use wyvern_mc::{dimension::{BlockState, Dimension}, plugin::Setup, scheduler::{ConnectEvent, Event, MoveEvent, Param, PlayerTickEvent, ServerStartEvent}, values::{BlockPosition, Key, Location}, Player, Server};
+use wyvern_mc::{dimension::{BlockState, Dimension}, scheduler::{ConnectEvent, Event, Param, PlayerTickEvent, ServerStartEvent}, values::{BlockPosition, Key, Location}, Player, Server};
 
 static DIMENSION: LazyLock<Dimension> = LazyLock::new(|| Dimension::new(Key::new("wyvern", "global")));
 

@@ -1,8 +1,8 @@
-use std::sync::atomic::Ordering;
+use std::{sync::atomic::Ordering, vec};
 
-use voxidian_protocol::packet::{c2s::play::C2SPlayPackets, s2c::play::KeepAliveS2CPlayPacket, PacketEncodeDecode};
+use voxidian_protocol::{packet::{c2s::play::{BlockFace, C2SPlayPackets, PlayerStatus}, s2c::play::{BlockUpdateS2CPlayPacket, KeepAliveS2CPlayPacket}, PacketEncodeDecode}, registry::RegEntry, value::BlockPos};
 
-use crate::{plugin::Plugin, scheduler::{ConnectEvent, Event, MoveEvent, Param, PlayerTickEvent, Scheduler, SneakEvent, SprintEvent, TypeMap}, values::Location};
+use crate::{dimension::BlockState, plugin::Plugin, scheduler::{ConnectEvent, Event, MoveEvent, Param, PlayerTickEvent, Scheduler, SneakEvent, SprintEvent, TypeMap}, values::{BlockPosition, Key, Location, Vector}};
 
 pub struct EventDispatcher;
 
@@ -66,6 +66,42 @@ impl Plugin for EventDispatcher {
                                 data.insert(Event::new(MoveEvent));
                                 Scheduler::run_systems_with_map(&data);
                             }
+                    }
+                    C2SPlayPackets::PlayerAction(packet) => {
+                        match packet.status {
+                            PlayerStatus::StartedDigging => {
+                                let block_pos = BlockPosition::new(
+                                    packet.location.x, 
+                                    packet.location.y, 
+                                    packet.location.z
+                                );
+                                println!("Breaking @ {:?}", block_pos);
+                                player.dimension().set_block(block_pos, BlockState::new(Key::new("minecraft", "spruce_planks")));
+                            },
+                            PlayerStatus::CancelledDigging => todo!(),
+                            PlayerStatus::FinishedDigging => todo!(),
+                            PlayerStatus::DropItemStack => todo!(),
+                            PlayerStatus::DropItem => todo!(),
+                            PlayerStatus::FinishUsingItem => todo!(),
+                            PlayerStatus::SwapItems => todo!(),
+                        }
+                    }
+                    C2SPlayPackets::UseItemOn(packet) => {
+                        let vector = match packet.face {
+                            BlockFace::Down => BlockPosition::new(0, -1, 0),
+                            BlockFace::Up => BlockPosition::new(0, 1, 0),
+                            BlockFace::North => BlockPosition::new(0, 0, -1),
+                            BlockFace::South => BlockPosition::new(0, 0, 1),
+                            BlockFace::West => BlockPosition::new(-1, 0, 0),
+                            BlockFace::East => BlockPosition::new(1, 0, 0)
+                        };
+                        let block_pos = BlockPosition::new(
+                            packet.target.x + vector.x, 
+                            packet.target.y + vector.y, 
+                            packet.target.z + vector.z
+                        );
+                        println!("Placing @ {:?}", block_pos);
+                        player.dimension().set_block(block_pos, BlockState::new(Key::new("minecraft", "oak_planks")));
                     }
                     _ => {}                    
                 }

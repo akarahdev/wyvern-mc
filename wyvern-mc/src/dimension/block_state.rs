@@ -29,6 +29,10 @@ impl BlockState {
         self.properties.get(key)
     }
 
+    pub fn material(&self) -> Key<Block> {
+        self.block_id.clone()
+    }
+
     pub(crate) fn to_protocol(&self) -> ProtocolBlockState {
         ProtocolBlockState {
             id: Identifier::new(&self.block_id.namespace, &self.block_id.path),
