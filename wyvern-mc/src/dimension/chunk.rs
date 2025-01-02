@@ -47,15 +47,11 @@ impl ChunkSection {
         self.blocks[y][z][x] = new_block;
         println!("new block: {:?}", new_block);
 
-
-        
         for conn in Server::get().connections() {
-            if original_block.id() != new_block.id() {
-                conn.raw_handle().send_packet(BlockUpdateS2CPlayPacket {
-                    pos: BlockPos::new(x as i32, y as i32, z as i32),
-                    block: new_block,
-                }).unwrap();
-            }
+            conn.raw_handle().send_packet(BlockUpdateS2CPlayPacket {
+                pos: BlockPos::new(x as i32, y as i32, z as i32),
+                block: new_block,
+            }).unwrap();
         }
 
         if original_block.id() != 0 && new_block.id() == 0 {

@@ -11,19 +11,6 @@ impl Plugin for PlayPlugin {
     fn load(&self, server: &mut ServerBuilder) {
         server.low_level(|server| {
             server.play_event(|packet, connection| {
-                if let C2SPlayPackets::ClientTickEnd(packet) = packet {
-                    return;
-                }
-                if let C2SPlayPackets::MovePlayerPosRot(packet) = packet {
-                    return;
-                }
-                if let C2SPlayPackets::MovePlayerPos(packet) = packet {
-                    return;
-                }
-                if let C2SPlayPackets::MovePlayerRot(packet) = packet {
-                    return;
-                }
-                
                 println!("Play Packet: {:?}", packet);
             });
             server.play_event(|packet, connection| {

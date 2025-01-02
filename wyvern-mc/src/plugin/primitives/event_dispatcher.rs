@@ -1,6 +1,6 @@
 use std::{sync::atomic::Ordering, vec};
 
-use voxidian_protocol::{packet::{c2s::play::{BlockFace, C2SPlayPackets, PlayerStatus}, s2c::play::{BlockUpdateS2CPlayPacket, KeepAliveS2CPlayPacket}, PacketEncodeDecode}, registry::RegEntry, value::BlockPos};
+use voxidian_protocol::{packet::{c2s::play::{BlockFace, C2SPlayPackets, PlayerStatus}, s2c::play::{BlockChangedAckS2CPlayPacket, BlockUpdateS2CPlayPacket, KeepAliveS2CPlayPacket}, PacketEncodeDecode}, registry::RegEntry, value::{BlockPos, VarInt}};
 
 use crate::{dimension::BlockState, plugin::Plugin, scheduler::{ConnectEvent, Event, MoveEvent, Param, PlayerTickEvent, Scheduler, SneakEvent, SprintEvent, TypeMap}, values::{BlockPosition, Key, Location, Vector}};
 
@@ -76,7 +76,8 @@ impl Plugin for EventDispatcher {
                                     packet.location.z
                                 );
                                 println!("Breaking @ {:?}", block_pos);
-                                player.dimension().set_block(block_pos, BlockState::new(Key::new("minecraft", "spruce_planks")));
+                                player.dimension().set_block(block_pos, BlockState::new(Key::new("minecraft", "air")));
+                                player.raw_handle().send_packet(BlockChangedAckS2CPlayPacket(packet.sequence)).unwrap();
                             },
                             PlayerStatus::CancelledDigging => todo!(),
                             PlayerStatus::FinishedDigging => todo!(),
