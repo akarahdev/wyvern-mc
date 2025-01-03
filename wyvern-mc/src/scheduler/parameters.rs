@@ -1,11 +1,11 @@
-use super::{Task, TypeMap};
+use super::TypeMap;
 
 pub trait TaskParameter: Sized {
     fn fetch(data: &TypeMap) -> Option<Self>;
 }
 
 impl TaskParameter for () {
-    fn fetch(data: &TypeMap) -> Option<Self> {
+    fn fetch(_data: &TypeMap) -> Option<Self> {
         Some(())
     }
 }

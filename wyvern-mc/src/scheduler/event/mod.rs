@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::{dimension::Dimension, values::{BlockPosition, Location}, Player};
+use crate::{dimension::Dimension, inventory::ItemStack, values::{BlockPosition, Location}, Player};
 use super::{parameters::TaskParameter, TypeMap};
 
 mod all_events;
@@ -36,12 +36,12 @@ pub trait EventFetcher: Clone + Sized + 'static {
 
 
 pub trait EventParameter: Clone {}
-
 impl EventParameter for Player {}
 impl EventParameter for Dimension {}
 impl EventParameter for Location {}
 impl EventParameter for BlockPosition {}
-
+impl EventParameter for ItemStack {}
+impl EventParameter for usize {}
 
 #[derive(Clone)]
 pub struct Param<P: EventParameter> {

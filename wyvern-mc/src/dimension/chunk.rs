@@ -43,9 +43,7 @@ impl ChunkSection {
         let original_block = self.blocks[y][z][x];
         let new_block = unsafe { RegEntry::new_unchecked(state.to_protocol().to_id().unwrap() as usize) };
 
-        println!("old block: {:?}", original_block);
         self.blocks[y][z][x] = new_block;
-        println!("new block: {:?}", new_block);
 
         for conn in Server::get().connections() {
             conn.raw_handle().send_packet(BlockUpdateS2CPlayPacket {

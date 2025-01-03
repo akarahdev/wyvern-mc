@@ -23,3 +23,11 @@ impl EventFetcher for SneakEvent {}
 #[derive(Clone)]
 pub struct SprintEvent;
 impl EventFetcher for SprintEvent {}
+
+#[derive(Clone)]
+pub struct ChangeHeldSlotEvent;
+impl EventFetcher for ChangeHeldSlotEvent {}
+
+#[derive(Clone)]
+pub struct SetCreativeSlotEvent;
+impl EventFetcher for SetCreativeSlotEvent {}

@@ -32,8 +32,6 @@ impl RawConnection {
         &self,
         packet: P,
     ) -> Result<(), EncodeError> {
-        println!("Sending out packet: {:?}", packet);
-
         let mut tmp_buf = PacketBuf::new();
         packet.encode_prefixed(&mut tmp_buf)?;
         let mut buf = PacketBuf::new();

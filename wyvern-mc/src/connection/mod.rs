@@ -5,13 +5,16 @@ pub use handle::*;
 pub mod protocol;
 mod data;
 
+mod weak;
+pub use weak::*;
+
 use crate::Server;
 use std::collections::VecDeque;
 use std::io::{ErrorKind, Read, Write};
 use std::net::TcpStream;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{Receiver, Sender, channel};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use voxidian_protocol::packet::processing::{CompressionMode, PacketProcessing, SecretCipher};
 use voxidian_protocol::packet::{PacketBuf, Stage};
 
@@ -23,14 +26,14 @@ pub struct ConnectionData {
     pub(crate) packet_processing: Mutex<PacketProcessing>,
     pub(crate) stage: Mutex<Stage>,
     pub(crate) mark_for_removal: AtomicBool,
-    pub(crate) player_data: PlayerData
+    pub(crate) player_data: OnceLock<PlayerData>
 }
 
 impl ConnectionData {
     #[allow(clippy::new_ret_no_self)]
     pub fn new(stream: TcpStream, handle: Server) -> Player {
         let (sender, recv) = channel();
-        Player {
+        let player = Player {
             inner: Arc::new(ConnectionData {
                 packet_sender: sender.clone(),
                 packet_receiver: Mutex::new(recv),
@@ -42,11 +45,13 @@ impl ConnectionData {
                 }),
                 stage: Mutex::new(Stage::Handshake),
                 mark_for_removal: AtomicBool::new(false),
-                player_data: PlayerData::default(),
+                player_data: OnceLock::new(),
             }),
             packet_sender: sender,
             server: handle,
-        }
+        };
+        let _ = player.inner.player_data.set(PlayerData::new(player.clone()));
+        player
     }
 
     pub(crate) fn handle_incoming_data(&self) {

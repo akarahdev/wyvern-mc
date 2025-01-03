@@ -5,6 +5,7 @@ pub mod values;
 pub mod dimension;
 pub mod registry;
 pub mod scheduler;
+pub mod inventory;
 
 pub(crate) mod connection;
 pub(crate) mod server;

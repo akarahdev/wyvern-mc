@@ -10,7 +10,7 @@ pub struct PlayPlugin;
 impl Plugin for PlayPlugin {
     fn load(&self, server: &mut ServerBuilder) {
         server.low_level(|server| {
-            server.play_event(|packet, connection| {
+            server.play_event(|packet, _connection| {
                 println!("Play Packet: {:?}", packet);
             });
             server.play_event(|packet, connection| {

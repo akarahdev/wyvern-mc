@@ -17,7 +17,7 @@ use voxidian_protocol::{
     },
 };
 
-use crate::{plugin::Plugin, Server, ServerBuilder};
+use crate::{plugin::Plugin, ServerBuilder};
 
 pub struct ConfigurationPlugin;
 

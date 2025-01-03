@@ -1,4 +1,5 @@
 use crate::dimension::Dimension;
+use crate::inventory::PlayerInventory;
 use crate::values::Location;
 use crate::{ConnectionData, Server};
 use std::sync::atomic::Ordering;
@@ -9,6 +10,7 @@ use voxidian_protocol::packet::PacketBuf;
 use voxidian_protocol::value::VarInt;
 
 use super::protocol::RawConnection;
+use super::{PlayerData, WeakRefPlayer};
 
 #[derive(Clone)]
 pub struct Player {
@@ -18,6 +20,18 @@ pub struct Player {
 }
 
 impl Player {
+    pub(crate) fn data(&self) -> &PlayerData {
+        self.inner.player_data.get().unwrap()
+    }
+
+    pub(crate) fn make_weak(&self) -> WeakRefPlayer {
+        WeakRefPlayer {
+            inner: Arc::downgrade(&self.inner),
+            server: self.server.clone(),
+            packet_sender: self.packet_sender.clone(),
+        }
+    }
+
     pub fn raw_handle(&self) -> RawConnection {
         RawConnection {
             inner: self.inner.clone(),
@@ -27,23 +41,27 @@ impl Player {
     }
 
     pub fn set_dimension(&self, dim: Dimension) {
-        let mut dim_ref = self.inner.player_data.dimension.lock().unwrap();
+        let mut dim_ref = self.data().dimension.lock().unwrap();
         *dim_ref = Some(dim);
     }
 
+    pub fn inventory(&self) -> PlayerInventory {
+        self.data().inventory.clone()
+    }
+
     pub fn dimension(&self) -> Dimension {
-        self.inner.player_data.dimension.lock().unwrap().clone().unwrap()
+        self.data().dimension.lock().unwrap().clone().unwrap()
     }
 
     pub fn location(&self) -> Location {
-        self.inner.player_data.last_position.lock().unwrap().clone()
+        self.data().last_position.lock().unwrap().clone()
     }
 
     pub fn teleport(&self, location: Location) {
-        *self.inner.player_data.last_position.lock().unwrap() = location.clone();
+        *self.data().last_position.lock().unwrap() = location.clone();
         self.raw_handle().send_packet(PlayerPositionS2CPlayPacket {
             teleport_id: VarInt::from(
-                self.inner.player_data.last_teleport_transaction_sent.fetch_add(1, Ordering::AcqRel)+1
+                self.data().last_teleport_transaction_sent.fetch_add(1, Ordering::AcqRel)+1
             ),
             x: location.x,
             y: location.y,
