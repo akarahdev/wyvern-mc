@@ -1,6 +1,6 @@
-use voxidian_protocol::{packet::s2c::play::BlockUpdateS2CPlayPacket, registry::RegEntry, value::{Biome, BlockPos, BlockState, ChunkSection as ProtocolSection, Identifier, PaletteFormat, PalettedContainer}};
+use voxidian_protocol::{packet::s2c::play::BlockUpdateS2CPlayPacket, registry::RegEntry, value::{BlockPos, BlockState, ChunkSection as ProtocolSection, Identifier, PaletteFormat, PalettedContainer}};
 
-use crate::Server;
+use crate::{registry::Registries, Server};
 
 pub struct ChunkSection {
     block_count: i16,
@@ -41,7 +41,7 @@ impl ChunkSection {
         assert!(z <= 15);
 
         let original_block = self.blocks[y][z][x];
-        let new_block = unsafe { RegEntry::new_unchecked(state.to_protocol().to_id().unwrap() as usize) };
+        let new_block = unsafe { RegEntry::new_unchecked(state.to_protocol().to_id().unwrap_or(0) as usize) };
 
         self.blocks[y][z][x] = new_block;
 
@@ -84,7 +84,7 @@ impl ChunkSection {
             biomes: PalettedContainer {
                 bits_per_entry: 0,
                 format: PaletteFormat::SingleValued { 
-                    entry: Biome::vanilla_registry().make_entry(&Identifier::new("minecraft", "plains")).unwrap() 
+                    entry: Registries::biomes().make_entry(&Identifier::new("minecraft", "plains")).unwrap() 
                 }
             },
         }

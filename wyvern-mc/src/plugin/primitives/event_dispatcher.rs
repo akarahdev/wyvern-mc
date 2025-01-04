@@ -2,7 +2,7 @@ use std::sync::atomic::Ordering;
 
 use voxidian_protocol::packet::{c2s::play::{BlockFace, C2SPlayPackets, PlayerStatus}, s2c::play::{BlockChangedAckS2CPlayPacket, KeepAliveS2CPlayPacket}};
 
-use crate::{dimension::BlockState, inventory::ItemStack, plugin::Plugin, scheduler::{ChangeHeldSlotEvent, ConnectEvent, Event, MoveEvent, Param, PlayerTickEvent, Scheduler, SetCreativeSlotEvent, SneakEvent, SprintEvent, TypeMap}, values::{BlockPosition, Key, Location}};
+use crate::{dimension::BlockState, inventory::{EquipmentSlot, ItemStack}, plugin::Plugin, scheduler::{ChangeHeldSlotEvent, ConnectEvent, Event, MoveEvent, Param, PlayerTickEvent, Scheduler, SetCreativeSlotEvent, SneakEvent, SprintEvent, TypeMap}, values::{BlockPosition, Key, Location}};
 
 pub struct EventDispatcher;
 
@@ -99,12 +99,15 @@ impl Plugin for EventDispatcher {
                             packet.target.y + vector.y, 
                             packet.target.z + vector.z
                         );
-                        println!("Placing @ {:?}", block_pos);
-                        player.dimension().set_block(block_pos, BlockState::new(Key::new("minecraft", "oak_planks")));
+
+                        let item = player.inventory().get_equipment_slot(EquipmentSlot::MainHand);
+                        let id = item.id();
+                        println!("Placing @ {:?} {:?} ", block_pos, id);
+                        player.dimension().set_block(block_pos, BlockState::new(id.retype()));
                     }
                     C2SPlayPackets::SetCreativeModeSlot(packet) => {
                         let stack = ItemStack::from_slot_data(&packet.new_item);
-                        player.data().inventory.set_slot_in_memory(packet.slot as usize, stack.clone());
+                        player.data().inventory.set_slot_in_memory((packet.slot) as usize, stack.clone());
 
                         let mut data = TypeMap::new();
                         data.insert(Event::new(SetCreativeSlotEvent));
@@ -119,6 +122,9 @@ impl Plugin for EventDispatcher {
                         data.insert(Event::new(ChangeHeldSlotEvent));
                         data.insert(Param::new(packet.slot as usize));
                         Scheduler::run_systems_with_map(&data);
+                    }
+                    C2SPlayPackets::ContainerClose(_packet) => {
+                        player.data().inventory.inventory_offset.store(0, Ordering::SeqCst);
                     }
                     _ => {}
                 }

@@ -21,4 +21,12 @@ impl<T> Key<T> {
             _phantom: PhantomData
         }
     }
+
+    pub fn retype<U>(&self) -> Key<U> {
+        Key {
+            namespace: self.namespace.clone(),
+            path: self.path.clone(),
+            _phantom: PhantomData
+        }
+    }
 }

@@ -1,7 +1,7 @@
 
-use voxidian_protocol::value::{Identifier, Item, SlotData, VarInt};
+use voxidian_protocol::value::{Identifier, SlotData, VarInt};
 
-use crate::values::Key;
+use crate::{registry::Registries, values::Key};
 
 #[derive(Debug, Clone)]
 pub struct ItemStack {
@@ -11,7 +11,7 @@ pub struct ItemStack {
 
 impl ItemStack {
     pub(crate) fn from_slot_data(_data: &SlotData) -> ItemStack {
-        let item = Item::vanilla_registry().lookup(&_data.item_id).unwrap().id.clone();
+        let item = Registries::items().lookup(&_data.item_id).unwrap().id.clone();
         let item = Key::<ItemStack>::new(item.namespace, item.path);
 
         ItemStack {
@@ -21,7 +21,7 @@ impl ItemStack {
     }
 
     pub(crate) fn to_slot_data(&self) -> SlotData {
-        let entry = Item::vanilla_registry().make_entry(&Identifier::new(&self.key.namespace, &self.key.path)).unwrap();
+        let entry = Registries::items().make_entry(&Identifier::new(&self.key.namespace, &self.key.path)).unwrap();
 
         SlotData {
             item_count: VarInt::from(self.count as i32),
@@ -52,5 +52,9 @@ impl ItemStack {
     pub fn set_count(&mut self, count: u8) {
         assert!(count <= 99);
         self.count = count;
+    }
+
+    pub fn id(&self) -> Key<ItemStack> {
+        self.key.clone()
     }
 }

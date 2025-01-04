@@ -6,9 +6,10 @@ use super::{Inventory, ItemStack, RootInventoryData};
 
 #[derive(Clone)]
 pub struct PlayerInventory {
-    pub(crate) inner: Arc<Mutex<RootInventoryData<41>>>,
+    pub(crate) inner: Arc<Mutex<RootInventoryData<45>>>,
     pub(crate) held_slot_in_hotbar: Arc<AtomicU8>,
-    pub(crate) player: WeakRefPlayer
+    pub(crate) player: WeakRefPlayer,
+    pub(crate) inventory_offset: Arc<AtomicU8> // this field exists because mojank's inventory system is weird
 }
 
 pub enum EquipmentSlot {
@@ -39,7 +40,8 @@ impl PlayerInventory {
         Self {
             inner: Arc::new(Mutex::new(RootInventoryData::default())),
             held_slot_in_hotbar: Arc::new(AtomicU8::new(0)),
-            player: player.make_weak()
+            player: player.make_weak(),
+            inventory_offset: Arc::new(AtomicU8::new(0))
         }
     }
 
@@ -60,29 +62,22 @@ impl PlayerInventory {
         self.held_slot_in_hotbar.load(Ordering::Relaxed)
     }
 
-    pub fn get_equipment_slot(&self, slot: EquipmentSlot) -> ItemStack {
-        let slot = match slot {
-            EquipmentSlot::MainHand => self.held_slot_in_hotbar.load(Ordering::Relaxed).into(),
+    pub fn get_slot_id(&self, slot: EquipmentSlot) -> usize {
+        match slot {
+            EquipmentSlot::MainHand => 36 + self.held_slot_in_hotbar.load(Ordering::Relaxed),
             EquipmentSlot::OffHand => 39,
-            EquipmentSlot::Head => 36,
-            EquipmentSlot::Chest => 37,
-            EquipmentSlot::Legs => 38,
-            EquipmentSlot::Boots => 41
-        };
+            EquipmentSlot::Head => 5,
+            EquipmentSlot::Chest => 6,
+            EquipmentSlot::Legs => 7,
+            EquipmentSlot::Boots => 8
+        }.into()
+    }
 
-        self.get_slot(slot)
+    pub fn get_equipment_slot(&self, slot: EquipmentSlot) -> ItemStack {
+        self.get_slot(self.get_slot_id(slot))
     }
 
     pub fn set_equipment_slot(&mut self, slot: EquipmentSlot, stack: ItemStack) {
-        let slot = match slot {
-            EquipmentSlot::MainHand => self.held_slot_in_hotbar.load(Ordering::Relaxed).into(),
-            EquipmentSlot::OffHand => 41,
-            EquipmentSlot::Head => 36,
-            EquipmentSlot::Chest => 37,
-            EquipmentSlot::Legs => 38,
-            EquipmentSlot::Boots => 39
-        };
-
-        self.set_slot(slot, stack);
+        self.set_slot(self.get_slot_id(slot), stack);
     }
 }

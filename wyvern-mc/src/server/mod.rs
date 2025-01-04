@@ -5,9 +5,9 @@ pub use protocol::*;
 mod builder;
 pub use builder::*;
 
-use voxidian_protocol::value::BlockState;
+use voxidian_protocol::value::{Biome, BlockState, DamageType, Item};
 
-use crate::{dimension::Dimension, scheduler::StoredTask, values::Key, Player};
+use crate::{dimension::Dimension, registry::Registries, scheduler::StoredTask, values::Key, Player};
 use std::{cell::OnceCell, collections::HashMap, sync::{mpsc::Receiver, Arc, Mutex, OnceLock}};
 
 pub static SERVER_INSTANCE: OnceLock<Server> = OnceLock::new();
@@ -41,7 +41,16 @@ impl Server {
             inner: Arc::new(Mutex::new(ServerData::default())),
         };
         let _ = SERVER_INSTANCE.set(server.clone());
-        ServerBuilder { server, persistent_tasks: Vec::new() }
+        ServerBuilder { 
+            server, 
+            persistent_tasks: Vec::new(), 
+            registries: Registries {
+                block_states: BlockState::all_block_states(),
+                items: Item::vanilla_registry(),
+                biomes: Biome::vanilla_registry(),
+                damage_types: DamageType::vanilla_registry(),
+            }
+        }
     }
 }
 

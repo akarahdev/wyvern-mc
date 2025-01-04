@@ -12,12 +12,12 @@ use voxidian_protocol::{
     },
     registry::{RegEntry, Registry},
     value::{
-        Biome, DamageType, DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier,
+        DimEffects, DimMonsterSpawnLightLevel, DimType, Identifier,
         LengthPrefixVec, PaintingVariant, TextComponent, VarInt, WolfVariant,
     },
 };
 
-use crate::{plugin::Plugin, ServerBuilder};
+use crate::{plugin::Plugin, registry::Registries, ServerBuilder};
 
 pub struct ConfigurationPlugin;
 
@@ -84,10 +84,10 @@ impl Plugin for ConfigurationPlugin {
                 );
 
                 connection
-                    .send_packet(DamageType::vanilla_registry().to_registry_data_packet())
+                    .send_packet(Registries::damage_types().to_registry_data_packet())
                     .unwrap();
                 connection
-                    .send_packet(Biome::vanilla_registry().to_registry_data_packet())
+                    .send_packet(Registries::biomes().to_registry_data_packet())
                     .unwrap();
                 connection
                     .send_packet(dim_type_registry.to_registry_data_packet())
